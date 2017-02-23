@@ -1,0 +1,265 @@
+---
+title: "Popularity of Disney names over time"
+author: "Kasia Kulma"
+output: 
+  md_document:
+    variant: markdown_github
+---
+
+---
+layout: post
+title: "Popularity of Disney names over time"
+date: 2017-02-22
+categories: rblogging
+tags: datavis
+---
+
+
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+
+
+My goal is to analyse how frequency of Disney female characters' names changed over time and if the movie release had any impact on their popularity. For this purpose, I will use `babynames` dataset that is freely available on CRAN. 
+
+The idea for the exercise was inspired by [Sean Kross' blog post](http://seankross.com/notes/disney/)
+
+
+
+### short description of the dataset
+
+
+*from package CRAN description* <https://cran.r-project.org/web/packages/babynames/index.html>  
+
+The SSA baby names data comes from social security number (SSN) applications. SSA cards were first issued in 1936, but were only needed for people with an income.  In 1986, the law changed effectively requiring all children to get an SSN at birth.
+
+
+The dataset is quite simple, covering US baby name records from late 1800's until 2014. It specifies whether a name is male or female, number of respective names in a given year, as well as what proportion they constituted.  
+
+
+
+```{r echo = TRUE}
+library(babynames)
+baby <- babynames
+baby$sex=as.factor(baby$sex)
+summary(baby)
+```
+
+
+
+
+### Installing packages
+
+
+```{r echo = TRUE, results='hide', message=FALSE, warning=FALSE}
+library(dplyr)
+library(ggplot2)
+```
+
+
+
+
+
+### Quick Data Edits
+
+
+I assign each name to a separate dataframe. 
+
+
+```{r data_manip, echo = TRUE}
+ariel <- baby %>%
+  filter(name == "Ariel", sex == "F")
+
+belle <- baby %>%
+  filter(name == "Belle", sex == "F")
+
+jasmine <- baby %>%
+  filter(name == "Jasmine", sex == "F")
+
+tiana <- baby %>%
+  filter(name == "Tiana", sex == "F")
+
+merida <- baby %>%
+  filter(name == "Merida", sex == "F")
+
+elsa <- baby %>%
+  filter(name == "Elsa", sex == "F")
+```
+
+
+
+Next, I create variable specifying the release date of a movie with a respective character's name. 
+
+
+
+```{r echo = TRUE}
+# The Little Mermaid
+ariel_release = 1989
+
+# Beauty and the Beast
+belle_release = 1991
+
+# Alladin
+jasmine_release = 1992
+
+# The Princess and the Frog
+tiana_release = 2009
+
+# Brave
+merida_release = 2012
+
+# Frozen
+elsa_release = 2013
+```
+
+
+
+
+## Plots
+
+
+
+
+Finally, I plot the number of names for a given year. The arrow indicates when the movie was released, so that it's easier to compare *before* and *after* trend. Additionally, I show the number of names and their proportion for a year proceeding and following the movie release. The numbers (and graphs!) say it all :-)
+
+
+
+### Ariel
+
+```{r echo = TRUE}
+  ggplot(ariel, aes(x=year, y=n)) + 
+  geom_line(col="red") + 
+  xlab("") + 
+  ylab("") + 
+  ggtitle("Ariel") + 
+  geom_segment(aes(x = ariel_release, y = 0, xend = ariel_release, yend = 500), arrow = arrow(length = unit(0.1, "cm")))
+```
+
+
+```{r echo = TRUE}
+
+ariel %>%
+  filter(year %in% c(ariel_release - 1,  ariel_release + 1))  %>% 
+  mutate(when = ifelse(year == ariel_release - 1, "1 yr before",
+                      "1 yr after")) 
+```
+
+   
+   
+   
+   
+
+### Belle
+
+```{r echo = FALSE}
+
+ggplot(belle, aes(x=year, y=n)) + 
+  geom_line(col="blue") +  
+  xlab("") + 
+  ylab("") +
+  ggtitle("Belle") +
+  geom_segment(aes(x = belle_release, y = 200, xend = belle_release, yend = 30), arrow = arrow(length = unit(0.1, "cm")))
+```
+
+
+```{r echo = FALSE}
+
+belle %>%
+  filter(year %in% c(belle_release - 1,  belle_release + 1))  %>% 
+  mutate(when = ifelse(year == belle_release - 1, "1 yr before",
+                      "1 yr after")) 
+```
+
+
+
+
+
+
+### Jasmine
+
+```{r echo = FALSE}
+ ggplot(jasmine, aes(x=year, y=n)) + 
+  geom_line(col="green") +  
+  xlab("") + 
+  ylab("") + 
+  ggtitle("Jasmine") +
+  geom_segment(aes(x = jasmine_release, y = 5000, xend = jasmine_release, yend = 10000), arrow = arrow(length = unit(0.1, "cm")))
+```
+
+
+```{r echo = FALSE}
+
+jasmine %>%
+  filter(year %in% c(jasmine_release - 1,  jasmine_release + 1))  %>% 
+  mutate(when = ifelse(year == jasmine_release - 1, "1 yr before",
+                      "1 yr after")) 
+```
+
+
+
+
+
+### Tiana
+
+```{r echo = FALSE}
+  ggplot(tiana, aes(x=year, y=n)) + 
+  geom_line(col="orange") +  
+  xlab("") + 
+  ylab("") + ggtitle("Tiana") +
+  geom_segment(aes(x = tiana_release, y = 0, xend = tiana_release, yend = 460), arrow = arrow(length = unit(0.1, "cm")))
+```
+
+
+
+```{r echo = FALSE}
+
+tiana %>%
+  filter(year %in% c(tiana_release - 1,  tiana_release + 1))  %>% 
+  mutate(when = ifelse(year == tiana_release - 1, "1 yr before",
+                      "1 yr after")) 
+```
+
+
+
+
+
+### Merida
+
+```{r echo = FALSE}
+ ggplot(merida, aes(x=year, y=n)) + geom_line(col="purple") +  
+  xlab("") + 
+  ylab("") + ggtitle("Merida") +
+  geom_segment(aes(x = merida_release, y = 0, xend = merida_release, yend = 15), arrow = arrow(length = unit(0.1, "cm")))
+```
+
+Here, the *1 year before and after* comparison is not possible, as the movie was released in 2012 and no baby was called Merida in the US between 2002 and 2012. This still proves how powerful Disney movies can be!
+
+```{r echo = TRUE}
+
+tail(merida)
+
+```
+
+
+
+
+
+### Elsa
+
+```{r echo = FALSE}
+ ggplot(elsa, aes(x=year, y=n)) + geom_line(col="brown") +  
+  xlab("") + 
+  ylab("") + ggtitle("Elsa") +
+  geom_segment(aes(x = elsa_release, y = 0, xend = elsa_release, yend = 500), arrow = arrow(length = unit(0.1, "cm")))
+```
+
+
+```{r echo = FALSE}
+
+elsa %>%
+  filter(year %in% c(elsa_release - 1,  elsa_release + 1))  %>% 
+  mutate(when = ifelse(year == elsa_release - 1, "1 yr before",
+                      "1 yr after")) 
+```
