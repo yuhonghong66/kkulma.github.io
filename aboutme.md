@@ -4,7 +4,7 @@ title: About me
 subtitle: ""
 ---
 
-Overall, enthusiastic data enthusiast.
+Overall, enthusiastic data and science enthusiast.
 
 Formally, doctor in evolutionary biology.
 
