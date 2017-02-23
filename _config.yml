@@ -14,7 +14,7 @@ baseurl: ""
 # Of course don't forget to change the username and projectname to YOUR username and project
 
 # Name of website
-title: R-STATStic
+title: Kasia Kulma
 
 # Short description of your site
 description: Data fun and exploration
@@ -24,11 +24,12 @@ description: Data fun and exploration
 # List of links in the navigation bar
 navbar-links:
   About Me: "aboutme"
-  Resources:
-    - Beautiful Jekyll: "http://deanattali.com/beautiful-jekyll/"
-    - Learn markdown: "http://www.markdowntutorial.com/"
-    - GitHub Pages: "https://pages.github.com/"
-  Author's home: "http://deanattali.com"
+  About This Blog: "aboutblog"
+  My Other Blogs:
+    - Nauka Rzecz Ludzka [PL]: "http://katarzynakulma.blogspot.co.uk/"
+    - scienceprone: "https://scienceprone.wordpress.com/"
+#    - GitHub Pages: "https://pages.github.com/"
+#  Author's home: "http://deanattali.com"
 
 # Image to show in the navigation bar - image must be a square (width = height)
 # Remove this parameter if you don't want an image in the navbar
@@ -43,32 +44,30 @@ avatar: "/img/avatar-icon.png"
 # Change all these values or delete the ones you don't want.
 # Important: you must keep the "name" parameter, everything else you can remove
 author:
-  name: Some Person
-  email: "youremail@domain.com"
-  facebook: yourname  # eg. daattali
-  github: yourname    # eg. daattali
-  twitter: yourname   # eg. daattali
-  reddit: yourname    # eg. daattali
-  google-plus: +yourname   # eg. +DeanAttali or 109424658772469020925
-  linkedin: yourname  # eg. daattali
-  xing: yourname      # eg. daattali
-  stackoverflow: yourlink  # eg. "3943160/daattali"
-  snapchat: yourname  # eg. daattali
-  instagram: yourname # eg. daattali
-  youtube: yourlink   # eg. user/daattali or channel/daattali
-  spotify: yourname   # eg. daattali
-  telephone: yourphone   # eg. +14159998888
+  name: Kasia Kulma
+  github: kkulma    # eg. daattali
+  twitter: kkulma   # eg. daattali
+  reddit: ""    # eg. daattali
+  google-plus: ""   # eg. +DeanAttali or 109424658772469020925
+  linkedin: kasia-kulma-phd-7695b923  # eg. daattali
+  xing: ""      # eg. daattali
+  stackoverflow: 6327771/kasia-kulma  # eg. "3943160/daattali"
+  snapchat: ""  # eg. daattali
+  instagram: "" # eg. daattali
+  youtube: ""   # eg. user/daattali or channel/daattali
+  spotify: ""   # eg. daattali
+  telephone: ""   # eg. +14159998888
 
 # Select which links to show in the footer
 footer-links-active:
-  rss: false
-  facebook: true
-  email: true
+  rss: true
+  facebook: false
+  email: false
   twitter: true
   google-plus: false
   github: true
   reddit: false
-  linkedin: false
+  linkedin: true
   xing: false
   stackoverflow: false
   snapchat: false
@@ -86,7 +85,7 @@ share-links-active:
 
 # How to display the link to the website in the footer
 # Remove this if you don't want a link in the footer
-url-pretty: "MyWebsite.com"  # eg. "deanattali.com/beautiful-jekyll"
+url-pretty: ""  # eg. "deanattali.com/beautiful-jekyll"
 
 # --- Misc --- #
 # Fill in your Disqus shortname (NOT the userid) if you want to support Disqus comments
@@ -103,7 +102,7 @@ url-pretty: "MyWebsite.com"  # eg. "deanattali.com/beautiful-jekyll"
 
 # Excerpt Word Length
 # Truncates the excerpt to the specified number of words on the index page
-excerpt_length: 50
+excerpt_length: 60
 
 # Character used to separate site title and description in HTML document title
 # and RSS feed title
