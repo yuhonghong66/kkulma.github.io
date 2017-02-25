@@ -15,6 +15,6 @@ And that's exactly what I'm going to do here.
 This blog is essentially for me to showcase - and remind myself - what
 data / methods I've been playing with and what I've learned in the process.   
 
-I'm using R as my primary tool for data analysis and visualization, but don't be surprised to see Python code, too, from time to time.
+I'm using R as my primary tool for data analysis and visualization, but don't be surprised to see Python code from time to time.
 
 Comments / disputes / suggestions are more than welcome.
