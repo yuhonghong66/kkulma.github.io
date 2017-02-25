@@ -1,4 +1,4 @@
-My goal is to analyse how frequency of Disney female characters' names changed over time and if the movie release had any impact on their popularity. For this purpose, I will use `babynames` dataset that is freely available on CRAN.
+My goal is to analyse how frequency of names found among Disney female characters changed over time in the US. Specifically, I want to see if the movie release had any impact on their popularity. For this purpose, I will use `babynames` dataset that is available on CRAN.
 
 The idea for the exercise was inspired by [Sean Kross' blog post](http://seankross.com/notes/disney/)
 
@@ -6,9 +6,9 @@ The idea for the exercise was inspired by [Sean Kross' blog post](http://seankro
 
 *from CRAN [package description]("https://cran.r-project.org/web/packages/babynames/index.html")*
 
-The SSA baby names data comes from social security number (SSN) applications. SSA cards were first issued in 1936, but were only needed for people with an income. In 1986, the law changed effectively requiring all children to get an SSN at birth.
+*The SSA baby names data comes from social security number (SSN) applications. SSA cards were first issued in 1936, but were only needed for people with an income. In 1986, the law changed effectively requiring all children to get an SSN at birth.*
 
-The dataset is quite simple, covering US baby name records from late 1800's until 2014. It specifies whether a name is male or female, number of respective names in a given year, as well as what proportion they constituted.
+The dataset is quite simple, covering US baby name records from late 1800's until 2014. It specifies whether a name is male or female, number of respective names in a given year and what proportion they constituted.
 
 ``` r
 library(babynames)
@@ -63,7 +63,7 @@ elsa <- baby %>%
   filter(name == "Elsa", sex == "F")
 ```
 
-Next, I create variable specifying the release date of a movie with a respective character's name.
+Next, I create variable specifying the release date of a movie with character's name.
 
 ``` r
 # The Little Mermaid
