@@ -32,14 +32,14 @@ summary(baby)
     ##  3rd Qu.:2.346e-05  
     ##  Max.   :8.155e-02
 
-### Installing packages
+### installing packages
 
 ``` r
 library(dplyr)
 library(ggplot2)
 ```
 
-### Quick Data Edits
+### quick data pre-prep
 
 I assign each name to a separate dataframe.
 
@@ -63,7 +63,7 @@ elsa <- baby %>%
   filter(name == "Elsa", sex == "F")
 ```
 
-Next, I create variable specifying the release date of a movie with character's name.
+Next, I create variables specifying the release date of a movie with character's name.
 
 ``` r
 # The Little Mermaid
@@ -85,10 +85,15 @@ merida_release = 2012
 elsa_release = 2013
 ```
 
-Plots
+plots
 -----
 
-Finally, I plot the number of names for a given year. The arrow indicates when the movie was released, so that it's easier to compare *before* and *after* trend. Additionally, I show the number of names and their proportion for a year proceeding and following the movie release. The numbers (and graphs!) say it all :-)
+Finally, I plot the number of names for a given year. The arrows indicate when the movie was released, so that it's easier to compare *before* and *after* trend. Additionally, I show the number of names and their proportion for a year proceeding and following the movie release. The numbers (and graphs!) say it all :-)
+
+trends
+------
+
+Namely, the movie release indeed seems to have a positive impact on name popularity, at least short- , but often long-term. For example, Ariel, Belle showed much higher popularity that in pre-release days even a decade after the movie has been published.
 
 ### Ariel
 
@@ -136,6 +141,10 @@ ariel %>%
     ## 1  1991      F Jasmine 11523 0.005668207 1 yr before
     ## 2  1993      F Jasmine 12059 0.006118574  1 yr after
 
+
+On the other hand, in case of Jasmine and Tiana, the positive effect of the Disney movie release on name's popularity was rather short-term, although strong.   
+
+
 ### Tiana
 
 ![Tiana](/img/2017-02-22-disney-names_files/figure-markdown_github/unnamed-chunk-10-1.png)
@@ -147,6 +156,9 @@ ariel %>%
     ## 2  2010      F Tiana   962 0.0004917941  1 yr after
 
 ### Merida
+
+Finally, it's difficult to judge the long-term effect for names Merida and Elsa, as both movies have been released very recently, but at least a year following the release
+showed a remarkable jump in names' popularity.
 
 ![Merida](/img/2017-02-22-disney-names_files/figure-markdown_github/unnamed-chunk-12-1.png)
 
@@ -175,3 +187,6 @@ tail(merida)
     ##   <dbl> <fctr> <chr> <int>        <dbl>       <chr>
     ## 1  2012      F  Elsa   540 0.0002794116 1 yr before
     ## 2  2014      F  Elsa  1131 0.0005834306  1 yr after
+
+
+All in all, it goes to show that Disney movies are an important part of our culture that has the power to influence our lives in surprising ways :)
