@@ -1,3 +1,5 @@
+rm(list = ls())
+
 ####### solution 1 ########
 
 urll <- 'http://www.amazon.com/Key-Industries-Washed-Denim-Sleeve/product-reviews/B009URT88Y/ref=dp_top_cm_cr_acr_txt?showViewpoints=1'
@@ -27,15 +29,18 @@ str(test)
 ####### solution 2 ########
 ls()
 
+??read_html
+
 install.packages("pacman")
-pacman::p_load(XML, dplyr, stringr, rvest, audio)
+pacman::p_load(XML, dplyr, stringr, rvest, audio, xml2)
+update.packages()
 
 #Remove all white space
 trim <- function (x) gsub("^\\s+|\\s+$", "", x)
 
 prod_code = "1846558239"
 url <- paste0("https://www.amazon.co.uk/dp/", prod_code)
-doc <- read_html(url)
+doc <- xml2::read_html(url)
 
 #obtain the text in the node, remove "\n" from the text, and remove white space
 prod <- html_nodes(doc, "#productTitle") %>% html_text() %>% gsub("\n", "", .) %>% trim()
@@ -49,12 +54,13 @@ pages <- 10
 
 reviews_all <- NULL
 for(page_num in 1:pages){
-  url <- paste0("http://www.amazon.co.uk/product-reviews/",prod_code,"/?pageNumber=", page_num)
-  doc <- read_html(url)
+  url2 <- paste0("http://www.amazon.co.uk/product-reviews/",prod_code,"/?pageNumber=", page_num)
+  doc2 <- read_html(url2)
   
-  reviews <- amazon_scraper(doc, reviewer = F, delay = 2)
+  reviews <- amazon_scraper(doc2, reviewer = F, delay = 2)
   reviews_all <- rbind(reviews_all, cbind(prod, reviews))
 }
+
 
 str(reviews_all)
  head(reviews_all)
