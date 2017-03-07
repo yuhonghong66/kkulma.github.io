@@ -1,7 +1,17 @@
 ---
 title: "2017-03-07-amazon-reviews-wordcloud"
 author: Kasia Kulma
-output: html_document
+output: 
+  md_document:
+    variant: markdown_github
+---
+
+---
+layout: post
+title: "This is a test post for my R blog"
+date: 2016-12-01
+categories: rblogging
+tags: test ggplot2
 ---
 
 ```{r setup, include=FALSE}
@@ -29,7 +39,7 @@ The web-scraping procedures that follow were shamelessly "borrowed" from [Riki S
 
 The following code requires _Amazon's product code_, which can be found in the product's URL. Next, it scrapes the product's name, just to confirm we got everything right!
 
-```{r echo = TRUE}
+```{r echo = TRUE, message=FALSE, warning=FALSE}
 # define a function removing all white space
 trim <- function (x) gsub("^\\s+|\\s+$", "", x)
 
@@ -45,13 +55,13 @@ prod
 
 So far, so good. Now, after sourcing `amazon_scraper` function from Riki's Github page, I import first 50 pages of reviews of _Sapiens_:
 
-```{r echo = TRUE}
+```{r echo = TRUE, message=FALSE, warning=FALSE}
 # THE KEY: Source function to parse Amazon html pages for data
 source("https://raw.githubusercontent.com/rjsaito/Just-R-Things/master/Text%20Mining/amazonscraper.R")
 ```
 
 
-```{r echo = TRUE}
+```{r echo = TRUE, message=FALSE, warning=FALSE}
 pages <- 50
 
 reviews_all <- NULL
@@ -138,3 +148,5 @@ wordcloud(words = names(freq), freq = freq, max.words=250,
           random.order=FALSE,
           colors=pal)
 ```
+
+As pretty as it looks, it's not too informative regarding how positive / negative the reviews were. For this, in my next post I'll run a [sentiment analysis](https://en.wikipedia.org/wiki/Sentiment_analysis) on reviews of both books, so watch this space! 
