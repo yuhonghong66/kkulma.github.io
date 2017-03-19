@@ -1,0 +1,255 @@
+---
+title: "2017-03-20-sentiment-analysis-of-hararis-books"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+
+```{r libraries, echo = TRUE, message=FALSE, error=FALSE, warning=FALSE, results='hide'}
+# load packages
+install.packages("pacman")
+pacman::p_load(XML, dplyr, rvest, ggplot2,stringr, tidyr, xml2, tidytext, knitr, RSentiment)
+```
+
+```{r scrape_reviews, echo = TRUE, message=FALSE, error=FALSE, warning=FALSE}
+# load packages
+#install.packages("pacman")
+pacman::p_load(XML, dplyr, rvest, purrr, ggplot2,stringr, tidyr, xml2, tidytext, knitr, RSentiment)
+
+sapiens_code = "1846558239"
+deus_ex_code = "1910701874"
+
+#Source funtion to Parse Amazon html pages for data
+source("https://raw.githubusercontent.com/rjsaito/Just-R-Things/master/Text%20Mining/amazonscraper.R")
+
+pages <- 13
+
+function_page <- function(page_num, prod_code){
+  url2 <- paste0("http://www.amazon.co.uk/product-reviews/",prod_code,"/?pageNumber=", page_num)
+  doc2 <- read_html(url2)
+  
+  reviews <- amazon_scraper(doc2, reviewer = F, delay = 2)
+  reviews
+}
+
+sapiens_reviews <- map2(1:pages, sapiens_code, function_page) %>% bind_rows()
+sapiens_reviews$comments <- gsub("\\.", "\\. ", sapiens_reviews$comments)
+
+deusex_reviews <- map2(1:pages, deus_ex_code, function_page) %>% bind_rows()
+deusex_reviews$comments <- gsub("\\.", "\\. ", deusex_reviews$comments)
+
+knitr::kable(head(deusex_reviews, 2))
+```
+
+
+```{r sentiment_analysis}
+### sentiment analysis ####
+
+words_function <- function(df){
+  df_words <- df %>% 
+  select(comments, format, stars, helpful) %>% 
+  unnest_tokens(word, comments)
+  
+  data("stop_words")
+  
+  df_words <- df_words %>%
+    anti_join(stop_words)
+  
+  df_words
+}
+
+sapiens_words <- words_function(sapiens_reviews)
+deusex_words <- words_function(deusex_reviews)
+```
+
+
+
+```{r sentiments_words, echo=TRUE}
+get_sentiments("bing") %>% head
+get_sentiments("nrc") %>% head
+get_sentiments("afinn") %>% head
+```
+
+
+
+```{r words_score, echo = TRUE}
+sapiens_words <- sapiens_words %>% 
+  left_join(get_sentiments("bing"), by = "word") %>% 
+  left_join(get_sentiments("afinn"), by = "word") %>% 
+  mutate(book = "Sapiens")
+
+deusex_words <- deusex_words %>% 
+  left_join(get_sentiments("bing"), by = "word") %>% 
+  left_join(get_sentiments("afinn"), by = "word") %>% 
+  mutate(book = "Deus Ex")
+
+all_words = bind_rows(sapiens_words, deusex_words)
+
+knitr::kable(head(all_words))
+```
+
+
+```{r no_words, echo = TRUE}
+### # how many words for analysis ###
+# sapiens
+sum(is.na(sapiens_words$sentiment))/nrow(sapiens_words)
+nrow(sapiens_words)-sum(is.na(sapiens_words$sentiment))
+
+# deus_ex 
+sum(is.na(deusex_words$sentiment))/nrow(deusex_words)
+nrow(deusex_words)-sum(is.na(deusex_words$sentiment))
+```
+
+```{r no_stars, echo = TRUE}
+### number of stars per review 
+round(table(sapiens_words$stars)/sum(table(sapiens_words$stars)), 2)
+round(table(deusex_words$stars)/sum(table(deusex_words$stars)), 2)
+
+all_words %>%
+  group_by(book, stars) %>%
+  summarize(n_stars = n()) %>%
+  group_by(book) %>% 
+  mutate(n_reviews = sum(n_stars),
+         percent = paste0(round(n_stars*100/n_reviews, 0), "%")) %>% 
+  select(-c(n_stars, n_reviews)) %>% 
+  spread(stars, percent)
+
+### average sentiment score 
+
+all_words %>% 
+  group_by(book) %>% 
+  summarise(mean = mean(score, na.rm = TRUE), median = median(score, na.rm  = TRUE)) 
+
+all_words %>% 
+  ggplot(aes(x= book, y = score, color = book, fill = book)) +
+  geom_boxplot(outlier.shape=NA, alpha = 0.3)  #avoid plotting outliers twice
+```
+  
+  
+```{r words_spread, echo = TRUE}
+### sentiment score spread 
+
+
+all_words %>% 
+  ggplot(aes(x= book, y = score, color = book, fill = book)) +
+  geom_boxplot(outlier.shape=NA, alpha = 0.3) + #avoid plotting outliers twice
+  geom_jitter(position=position_jitter(width=.1, height=0))
+```
+
+```{r avg_word_sent, echo = TRUE}
+### average sentiment score per star 
+
+all_words %>% 
+  ggplot(aes(as.factor(stars), score)) +
+  geom_boxplot(aes(fill = book), alpha = 0.3) +
+  xlab("Number of stars")#+
+  #facet_wrap( ~ stars)#, scales="free")
+
+### ratio of positive / negative words per review
+
+all_words %>%
+  filter(!is.na(sentiment)) %>%
+  group_by(book, sentiment) %>% 
+  summarise(n = n() ) %>%
+  group_by(book) %>%
+  mutate(sum = sum(n),
+         percent = paste0(round(n*100/sum, 0), "%")) %>%
+  select(-c(n, sum)) %>%
+  spread(sentiment, percent)
+  
+### ratio of positive / negative words per star per review
+
+all_words %>% 
+  filter(!is.na(sentiment)) %>%
+  group_by(book, stars, sentiment) %>%
+  summarise(n = n()) %>%
+  group_by(book, stars) %>%
+  mutate(sum = sum(n), 
+         percent = paste0(round(n*100/sum, 0), "%"),
+         percent2 = round(n/sum, 3)) %>% 
+  select(-c(n, sum, percent)) %>%
+  spread(sentiment, percent2) %>%
+  ggplot(aes(x = stars, y = positive, fill = book)) +
+    geom_bar(stat = "identity", position = "identity", alpha = 0.6)
+```
+
+
+```{r pre_sentence, echo=TRUE}
+#### Rsentiment and sentences ####
+
+
+#### scoring sentences ####
+
+sentence_function <- function(df){
+  df_sentence <- df %>% 
+    select(comments, format, stars, helpful) %>% 
+    mutate(comments = str_replace_all(comments, "[[:digit:]]", "")) %>% #remove all digits
+    unnest_tokens(sentence, comments, token = "sentences") %>%
+    mutate(sentence2 = str_replace_all(sentence, "[^[:alnum:]]", " "),
+           clean_sentence = ifelse(grepl("[[:alpha:]]", sentence), sentence2, NA)) %>% 
+    na.omit() %>%
+    select(-c(sentence2)) #removing all special characters & numbers
+  
+  df_sentence <- df_sentence  %>%
+    mutate(sentence_score = unname(calculate_score(clean_sentence))) 
+  
+  df_sentence
+}
+
+
+
+# go and get a hot drink while this is running 
+sapiens_sentence <- sentence_function(sapiens_reviews) %>%
+  mutate
+
+deusex_sentence <- sentence_function(deusex_reviews) %>%
+  mutate(book = "Deus Ex")
+
+all_sentence <-bind_rows(sapiens_sentence, deusex_sentence)
+
+knitr::kable(head(all_sentence))
+```
+
+> Error in eval(expr, envir, enclos) : 
+>  java.lang.OutOfMemoryError: Java heap space
+
+
+```{r sentence_summary, echo = TRUE }
+all_sentence %>% 
+  group_by(book) %>%
+  summarize(min = min(sentence_score), max = max(sentence_score), mean = mean(sentence_score),
+            median = median(sentence_score))
+
+all_sentence %>%
+  filter(sentence_score == -7) %>%
+  as.data.frame() %>% 
+  head() %>% kable()
+
+all_sentence %>%
+  filter(sentence_score == 7) %>%
+  as.data.frame() %>% 
+  head() %>% kable
+```
+  
+
+```{r avg_score, echo = TRUE}  
+  ### adding word_count 
+  
+  str(all_sentence)
+  
+  all_sentence <- all_sentence %>%
+    mutate(word_count = str_count(clean_sentence, "\\S+"),
+           avg_score = round(sentence_score/word_count, 3)) %>%
+    as.data.frame()
+  
+  
+    ggplot(all_sentence, aes(x = book, y = avg_score, color = book, fill = book)) +
+    geom_boxplot(alpha = 0.1)
+```
+
+
+A couple of words about `RSentiment` package: it has a huge advantage over other R packages used for text mining by XXXX. **HOWEVER**, it's still very bug-y: (e.g. returns named vectors when evaluating single sentences with `score_sentence()`; does not correctly evaluate sentences special characters) and good Lord, it is SLOW. 
+  
