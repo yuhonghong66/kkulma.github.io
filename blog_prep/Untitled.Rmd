@@ -1,0 +1,96 @@
+---
+title: "Untitled"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+So! Following my [previous blog post](https://kkulma.github.io/2017-03-07-amazon-reviews-wordcloud/) where I scraped Amazon reviews of Yuval Harari's [_"Sapiens"_](https://kkulma.github.io/2017-03-07-amazon-reviews-wordcloud/), here I will compare results of [sentiment analysis](https://en.wikipedia.org/wiki/Sentiment_analysis) performed on Harari's two books: [_"Sapiens"_](https://en.wikipedia.org/wiki/Sapiens:_A_Brief_History_of_Humankind) and [_"Deus Ex"_](https://en.wikipedia.org/wiki/Homo_Deus:_A_Brief_History_of_Tomorrow). 
+
+### A QUICK INTRO
+
+For the context, _"Sapiens"_ has been published originally in Hebrew in 2011. It, as _Wikipedia_ puts it,
+
+> surveys the history of humankind from the evolution of archaic human species in the Stone Age up to the twenty-first century. 
+
+It quickly became a bestseller, but it still took 4 years before Harari published his most recent book, and an overnight hit,  _"Deus Ex"_:
+
+> Homo Deus, as opposed to the previous book, deals more with the abilities acquired by mankind (Homo sapiens) throughout the years of its existence while basing itself as the dominant being in the world, and tries to paint an image of the future of mankind, if any
+_[Wikipedia]_
+
+So, in both books the historical, philosophical, economical and biological sythesis of the human species played the biggest role and in this snese they are simiar. At the same time, _"Sapiens"_ was the first of its kind and it probably set high expectations for the follower book. At the same time, _"Deus Ex"_ makes some bold predictions about the future and any such speculation will have a more polarizing effect than stating a historical fact. For this reason, my prediction is that _"Sapiens"_ will receive more positive reviews than _"Deus Ex"_. And there's only one way to find out if I'm right, so let's get cracking!
+
+
+### SENTIMENT ANALYSIS 
+
+After loading necessary packages, I wrap up a scraping process described in my previous post [previous blog post](https://kkulma.github.io/2017-03-07-amazon-reviews-wordcloud/) into a `function_page()` function. I extract the first 13 pages of reviews for both books, to have a comparable amount of data for analysis ( _"Deus Ex"_ has been published in English only in September 2016). After some data cleaning, my data look like this: 
+
+```{r libraries, echo = TRUE, message=FALSE, error=FALSE, warning=FALSE, results='hide'}
+# load packages
+install.packages("pacman", repos = "https://cran.rstudio.com")
+pacman::p_load(XML, dplyr, rvest, ggplot2,stringr, tidyr, xml2, tidytext, knitr, RSentiment)
+```
+
+```{r scrape_reviews, echo = TRUE, message=FALSE, error=FALSE, warning=FALSE}
+# load packages
+#install.packages("pacman")
+pacman::p_load(XML, dplyr, rvest, purrr, ggplot2,stringr, tidyr, xml2, tidytext, knitr, RSentiment)
+
+sapiens_code = "1846558239"
+deus_ex_code = "1910701874"
+
+#Source funtion to Parse Amazon html pages for data
+source("https://raw.githubusercontent.com/rjsaito/Just-R-Things/master/Text%20Mining/amazonscraper.R")
+
+pages <- 13
+
+function_page <- function(page_num, prod_code){
+  url2 <- paste0("http://www.amazon.co.uk/product-reviews/",prod_code,"/?pageNumber=", page_num)
+  doc2 <- read_html(url2)
+  
+  reviews <- amazon_scraper(doc2, reviewer = F, delay = 2)
+  reviews
+}
+
+sapiens_reviews <- map2(1:pages, sapiens_code, function_page) %>% bind_rows()
+sapiens_reviews$comments <- gsub("\\.", "\\. ", sapiens_reviews$comments)
+
+deusex_reviews <- map2(1:pages, deus_ex_code, function_page) %>% bind_rows()
+deusex_reviews$comments <- gsub("\\.", "\\. ", deusex_reviews$comments)
+
+knitr::kable(head(deusex_reviews, 2))
+```
+
+Looks like a good start to me! Next, I'll analyse and compare word sentiments between the two books. To achieve this, I write a function that breaks down review sentences into separate words and removes common English stop words, such as _you_, _at_, _above_, etc.    
+
+```{r sentiment_analysis, echo = TRUE, message=FALSE, error=FALSE, warning=FALSE, results='hide'}
+### sentiment analysis ####
+
+words_function <- function(df){
+  df_words <- df %>% 
+  select(comments, format, stars, helpful) %>% 
+  unnest_tokens(word, comments)
+  
+  data("stop_words")
+  
+  df_words <- df_words %>%
+    anti_join(stop_words)
+  
+  df_words
+}
+
+sapiens_words <- words_function(sapiens_reviews)
+deusex_words <- words_function(deusex_reviews)
+```
+
+Now, there are several approches to quantifying the amount of different sentiments in text (and thus using different relevant R lexicons) : you can associate a word with a given emotion, like joy, sadness, fear etc. (**NRC lexicon**), express whether a word is positive or negative (**bing lexicon**) or give it a numeric score between -5 and 5, where values under 0 indicate a negative sentiment and above 0 - the posive. Words scoring close to or equal zero are neutral.
+
+
+```{r sentiments_words, echo=TRUE}
+get_sentiments("bing") %>% head
+get_sentiments("nrc") %>% head
+get_sentiments("afinn") %>% head
+```
+
