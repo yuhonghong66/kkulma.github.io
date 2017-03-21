@@ -6,37 +6,43 @@ output: html_document
 ```{r setup, include=FALSE}
 knitr::opts_chunk$set(echo = TRUE)
 ```
-So! Following my [previous blog post](https://kkulma.github.io/2017-03-07-amazon-reviews-wordcloud/) where I scraped Amazon reviews of Yuval Harari's [_"Sapiens"_](https://kkulma.github.io/2017-03-07-amazon-reviews-wordcloud/), here I will compare results of [sentiment analysis](https://en.wikipedia.org/wiki/Sentiment_analysis) performed on Harari's two books: [_"Sapiens"_](https://en.wikipedia.org/wiki/Sapiens:_A_Brief_History_of_Humankind) and [_"Deus Ex"_](https://en.wikipedia.org/wiki/Homo_Deus:_A_Brief_History_of_Tomorrow). 
+So! Following my [previous blog post](https://kkulma.github.io/2017-03-07-amazon-reviews-wordcloud/) where I scraped Amazon reviews of Yuval Harari's [_Sapiens_](https://kkulma.github.io/2017-03-07-amazon-reviews-wordcloud/) to create a wordcloud based on them, here I will compare results of [sentiment analysis](https://en.wikipedia.org/wiki/Sentiment_analysis) performed on Harari's two books: [_Sapiens_](https://en.wikipedia.org/wiki/Sapiens:_A_Brief_History_of_Humankind) and [_Deus Ex_](https://en.wikipedia.org/wiki/Homo_Deus:_A_Brief_History_of_Tomorrow). 
 
 ### A QUICK INTRO
 
 For the context, _"Sapiens"_ has been published originally in Hebrew in 2011. It, as _Wikipedia_ puts it,
 
-> surveys the history of humankind from the evolution of archaic human species in the Stone Age up to the twenty-first century. 
+> [Sapiens] surveys the history of humankind from the evolution of archaic human species in the Stone Age up to the twenty-first century. 
 
-It quickly became a bestseller, but it still took 4 years before Harari published his most recent book, and an overnight hit,  _"Deus Ex"_:
+It quickly became a bestseller, but it still took 4 years before Harari published his most recent book, and an overnight hit,  _Deus Ex_:
 
 > Homo Deus, as opposed to the previous book, deals more with the abilities acquired by mankind (Homo sapiens) throughout the years of its existence while basing itself as the dominant being in the world, and tries to paint an image of the future of mankind, if any
 _[Wikipedia]_
 
-So, in both books the historical, philosophical, economical and biological sythesis of the human species played the biggest role and in this snese they are simiar. At the same time, _"Sapiens"_ was the first of its kind and it probably set high expectations for the follower book. At the same time, _"Deus Ex"_ makes some bold predictions about the future and any such speculation will have a more polarizing effect than stating a historical fact. For this reason, my prediction is that _"Sapiens"_ will receive more positive reviews than _"Deus Ex"_. And there's only one way to find out if I'm right, so let's get cracking!
+So, in both books the historical, philosophical, economical and biological sythesis of the human species played a big role and in this sense they are simiar. Still, _Sapiens_ was the first of its kind and it probably set high expectations for the follower book. Additionally, _Deus Ex_ makes some bold predictions about the future of human kind in the world ruled by algorithms and AI, and any such speculation will have a very polarizing effect. 
+
+
+**For this reason, my prediction is that _Sapiens_ will receive more positive reviews than _Deus Ex_.**
+And there's only one way to find out if I'm right, so let's get cracking!
 
 
 ### SENTIMENT ANALYSIS 
 
 After loading necessary packages, I wrap up a scraping process described in my previous post [previous blog post](https://kkulma.github.io/2017-03-07-amazon-reviews-wordcloud/) into a `function_page()` function. I extract the first 13 pages of reviews for both books, to have a comparable amount of data for analysis ( _"Deus Ex"_ has been published in English only in September 2016). After some data cleaning, my data look like this: 
 
-```{r libraries, echo = TRUE, message=FALSE, error=FALSE, warning=FALSE, results='hide'}
+
+```{r load, echo = TRUE, message=FALSE, error=FALSE, warning=FALSE}
 # load packages
-install.packages("pacman", repos = "https://cran.rstudio.com")
-pacman::p_load(XML, dplyr, rvest, ggplot2,stringr, tidyr, xml2, tidytext, knitr, RSentiment)
+# load packages
+library(tidyverse)
+library(XML)
+library(xml2)
+library(tidytext)
+library(knitr)
+library(RSentiment)
 ```
 
 ```{r scrape_reviews, echo = TRUE, message=FALSE, error=FALSE, warning=FALSE}
-# load packages
-#install.packages("pacman")
-pacman::p_load(XML, dplyr, rvest, purrr, ggplot2,stringr, tidyr, xml2, tidytext, knitr, RSentiment)
-
 sapiens_code = "1846558239"
 deus_ex_code = "1910701874"
 
@@ -108,19 +114,19 @@ deusex_words <- deusex_words %>%
 
 all_words = bind_rows(sapiens_words, deusex_words)
 
-knitr::kable(head(all_words))
+all_words %>% arrange(sentiment) %>% head() %>% kable()
 ```
 
 
 ```{r no_words, echo = TRUE}
 ### # how many words for analysis ###
 # sapiens
-sum(is.na(sapiens_words$sentiment))/nrow(sapiens_words)
-nrow(sapiens_words)-sum(is.na(sapiens_words$sentiment))
+sum(!is.na(sapiens_words$sentiment))/nrow(sapiens_words)
+nrow(sapiens_words)-sum(!is.na(sapiens_words$sentiment))
 
 # deus_ex 
-sum(is.na(deusex_words$sentiment))/nrow(deusex_words)
-nrow(deusex_words)-sum(is.na(deusex_words$sentiment))
+sum(!is.na(deusex_words$sentiment))/nrow(deusex_words)
+nrow(deusex_words)-sum(!is.na(deusex_words$sentiment))
 ```
 
 ```{r no_stars, echo = TRUE}
