@@ -5,6 +5,9 @@ output: html_document
 
 ```{r setup, include=FALSE}
 knitr::opts_chunk$set(echo = TRUE)
+
+rm(list=ls())
+
 ```
 So! Following my [previous blog post](https://kkulma.github.io/2017-03-07-amazon-reviews-wordcloud/) where I scraped Amazon reviews of Yuval Harari's [_Sapiens_](https://kkulma.github.io/2017-03-07-amazon-reviews-wordcloud/) to create a wordcloud based on them, here I will compare results of [sentiment analysis](https://en.wikipedia.org/wiki/Sentiment_analysis) performed on Harari's two books: [_Sapiens_](https://en.wikipedia.org/wiki/Sapiens:_A_Brief_History_of_Humankind) and [_Deus Ex_](https://en.wikipedia.org/wiki/Homo_Deus:_A_Brief_History_of_Tomorrow). 
 
@@ -31,6 +34,13 @@ And there's only one way to find out if I'm right, so let's get cracking!
 After loading necessary packages, I wrap up a scraping process described in my previous post [previous blog post](https://kkulma.github.io/2017-03-07-amazon-reviews-wordcloud/) into a `function_page()` function. I extract the first 13 pages of reviews for both books, to have a comparable amount of data for analysis ( _"Deus Ex"_ has been published in English only in September 2016). After some data cleaning, my data look like this: 
 
 
+```{r java, echo = TRUE}
+# this change is necessary to avoid Error: java.lang.OutOfMemoryError: Java heap space
+# later in the process
+options(java.parameters = "-Xmx3g")
+```
+
+
 ```{r load, echo = TRUE, message=FALSE, error=FALSE, warning=FALSE}
 # load packages
 # load packages
@@ -49,7 +59,7 @@ deus_ex_code = "1910701874"
 #Source funtion to Parse Amazon html pages for data
 source("https://raw.githubusercontent.com/rjsaito/Just-R-Things/master/Text%20Mining/amazonscraper.R")
 
-pages <- 13
+pages <- 12
 
 function_page <- function(page_num, prod_code){
   url2 <- paste0("http://www.amazon.co.uk/product-reviews/",prod_code,"/?pageNumber=", page_num)
@@ -75,7 +85,7 @@ Looks like a good start to me! Next, I'll analyse and compare word sentiments be
 
 words_function <- function(df){
   df_words <- df %>% 
-  select(comments, format, stars, helpful) %>% 
+  select(date, comments, stars) %>% 
   unnest_tokens(word, comments)
   
   data("stop_words")
@@ -99,41 +109,33 @@ get_sentiments("nrc") %>% head
 get_sentiments("afinn") %>% head
 ```
 
+All I need to do now is to use `left_join()` to add both lexicons to my data:
 
 
 ```{r words_score, echo = TRUE}
 sapiens_words <- sapiens_words %>% 
   left_join(get_sentiments("bing"), by = "word") %>% 
   left_join(get_sentiments("afinn"), by = "word") %>% 
-  mutate(book = "Sapiens")
+  mutate(book = "Sapiens") %>% unique()
 
 deusex_words <- deusex_words %>% 
   left_join(get_sentiments("bing"), by = "word") %>% 
   left_join(get_sentiments("afinn"), by = "word") %>% 
-  mutate(book = "Deus Ex")
+  mutate(book = "Deus Ex") %>% unique()
 
-all_words = bind_rows(sapiens_words, deusex_words)
+head(sapiens_words)
+```
 
+
+```{r all_words, echo = TRUE}
+all_words <- bind_rows(sapiens_words, deusex_words) 
 all_words %>% arrange(sentiment) %>% head() %>% kable()
 ```
 
 
-```{r no_words, echo = TRUE}
-### # how many words for analysis ###
-# sapiens
-sum(!is.na(sapiens_words$sentiment))/nrow(sapiens_words)
-nrow(sapiens_words)-sum(!is.na(sapiens_words$sentiment))
-
-# deus_ex 
-sum(!is.na(deusex_words$sentiment))/nrow(deusex_words)
-nrow(deusex_words)-sum(!is.na(deusex_words$sentiment))
-```
+Now we're ready to explore! For the start, star ratings should give me a flavour of the reviews' sentiments. Based on the distribution of given stars, it looks like _Deus Ex_ has more positive reviews than _Sapiens_ (convrsely to my predictions!): 83% of the reviews gave it 4 or 5 stars, whereas for _Sapiens_ it was only 52%. 
 
 ```{r no_stars, echo = TRUE}
-### number of stars per review 
-round(table(sapiens_words$stars)/sum(table(sapiens_words$stars)), 2)
-round(table(deusex_words$stars)/sum(table(deusex_words$stars)), 2)
-
 all_words %>%
   group_by(book, stars) %>%
   summarize(n_stars = n()) %>%
@@ -143,27 +145,22 @@ all_words %>%
   select(-c(n_stars, n_reviews)) %>% 
   spread(stars, percent)
 
-### average sentiment score 
-
-all_words %>% 
-  group_by(book) %>% 
-  summarise(mean = mean(score, na.rm = TRUE), median = median(score, na.rm  = TRUE)) 
-
-all_words %>% 
-  ggplot(aes(x= book, y = score, color = book, fill = book)) +
-  geom_boxplot(outlier.shape=NA, alpha = 0.3)  #avoid plotting outliers twice
 ```
   
-  
-```{r words_spread, echo = TRUE}
-### sentiment score spread 
+Is the same trend shown in the sentiment score?
 
+  
+```{r score_box, echo = TRUE}
 
 all_words %>% 
   ggplot(aes(x= book, y = score, color = book, fill = book)) +
   geom_boxplot(outlier.shape=NA, alpha = 0.3) + #avoid plotting outliers twice
-  geom_jitter(position=position_jitter(width=.1, height=0))
+  scale_color_manual(values=c("#333333", "#CC0000")) +
+  scale_fill_manual(values=c("#333333", "#CC0000")) 
 ```
+
+Not at all! Distribution of _afnn_ sentiment score for both books looks very similar. Does it mean that the star number reflects different level of positivity in those books? Let's have a look
+
 
 ```{r avg_word_sent, echo = TRUE}
 ### average sentiment score per star 
@@ -171,10 +168,16 @@ all_words %>%
 all_words %>% 
   ggplot(aes(as.factor(stars), score)) +
   geom_boxplot(aes(fill = book), alpha = 0.3) +
-  xlab("Number of stars")#+
-  #facet_wrap( ~ stars)#, scales="free")
+  xlab("Number of stars")+ 
+    scale_color_manual(values=c("#333333", "#CC0000")) +
+  scale_fill_manual(values=c("#333333", "#CC0000")) 
+```
 
-### ratio of positive / negative words per review
+Indeed, 1-star and 5-star ratings seem to be more positive for _Sapiens_ than they are for _Deus Ex_. What I find interesing is that for _Sapiens_ 1-star ratings are much more positive than 2- or 3-star ratings: their median is positive, where for the latter 2 is negative. At the same time, _Deus Ex_ shows more consistency between the sentiment score and number of stars given. Will XXX lexicon show similar patterns?
+
+
+```{r echo = TRUE}
+## ratio of positive / negative words per review
 
 all_words %>%
   filter(!is.na(sentiment)) %>%
@@ -185,7 +188,12 @@ all_words %>%
          percent = paste0(round(n*100/sum, 0), "%")) %>%
   select(-c(n, sum)) %>%
   spread(sentiment, percent)
-  
+```
+
+OK, so simple proportion of positive words seems slightly higher in _Sapiens_. How are these sentiments reflected in number of stars given?
+
+
+```{r echo = TRUE}
 ### ratio of positive / negative words per star per review
 
 all_words %>% 
@@ -199,8 +207,22 @@ all_words %>%
   select(-c(n, sum, percent)) %>%
   spread(sentiment, percent2) %>%
   ggplot(aes(x = stars, y = positive, fill = book)) +
-    geom_bar(stat = "identity", position = "identity", alpha = 0.6)
+    geom_bar(stat = "identity", position = "identity", alpha = 0.6) +
+    scale_color_manual(values=c("#333333", "#CC0000")) +
+  scale_fill_manual(values=c("#333333", "#CC0000")) 
+
 ```
+
+There you go! Weirdly enough, _Sapiens_ reviews with only 1 star are as positive as those with 5 stars! What's going on there? 
+
+
+```{r 1star, echo = TRUE}
+
+all_words %>% 
+  filter(book == "Sapiens" & stars == 1, score >= 2 ) %>% 
+  as.data.frame()
+```
+
 
 
 ```{r pre_sentence, echo=TRUE}
@@ -211,7 +233,7 @@ all_words %>%
 
 sentence_function <- function(df){
   df_sentence <- df %>% 
-    select(comments, format, stars, helpful) %>% 
+    select(date, comments,  stars, helpful) %>% 
     mutate(comments = str_replace_all(comments, "[[:digit:]]", "")) %>% #remove all digits
     unnest_tokens(sentence, comments, token = "sentences") %>%
     mutate(sentence2 = str_replace_all(sentence, "[^[:alnum:]]", " "),
@@ -226,34 +248,38 @@ sentence_function <- function(df){
 }
 
 
-
 # go and get a hot drink while this is running 
 sapiens_sentence <- sentence_function(sapiens_reviews) %>%
-  mutate
+  mutate(book = "Sapiens") %>% unique()
 
 deusex_sentence <- sentence_function(deusex_reviews) %>%
-  mutate(book = "Deus Ex")
+  mutate(book = "Deus Ex") %>% unique()
 
 all_sentence <-bind_rows(sapiens_sentence, deusex_sentence)
 
 knitr::kable(head(all_sentence))
 ```
 
-> Error in eval(expr, envir, enclos) : 
->  java.lang.OutOfMemoryError: Java heap space
-
+Let's stop for a minute and have a look at the values that `RSentiment::calculate_score()` just calculated. 
 
 ```{r sentence_summary, echo = TRUE }
 all_sentence %>% 
   group_by(book) %>%
   summarize(min = min(sentence_score), max = max(sentence_score), mean = mean(sentence_score),
             median = median(sentence_score))
+```
 
+They range from -7 to 7 for both books. How would the most negative and the most sentence look like?
+
+```{r negative_sentence, echo = TRUE}
 all_sentence %>%
   filter(sentence_score == -7) %>%
   as.data.frame() %>% 
   head() %>% kable()
+```
 
+
+```{r positive_sentence, echo = TRUE}
 all_sentence %>%
   filter(sentence_score == 7) %>%
   as.data.frame() %>% 
@@ -261,7 +287,8 @@ all_sentence %>%
 ```
   
 
-```{r avg_score, echo = TRUE}  
+  
+```{r avg_score_box, echo = TRUE}  
   ### adding word_count 
   
   str(all_sentence)
@@ -272,10 +299,28 @@ all_sentence %>%
     as.data.frame()
   
   
-    ggplot(all_sentence, aes(x = book, y = avg_score, color = book, fill = book)) +
-    geom_boxplot(alpha = 0.1)
+  
+    ggplot(all_sentence, aes(x = book, y = sentence_score, color = book, fill = book)) +
+    geom_boxplot(alpha = 0.1) +
+        scale_color_manual(values=c("#333333", "#CC0000")) +
+  scale_fill_manual(values=c("#333333", "#CC0000")) 
+    
+```  
+  
+```{r avg_score_star, echo = TRUE}
+    all_sentence %>% 
+  ggplot(aes(as.factor(stars), sentence_score)) +
+  geom_boxplot(aes(fill = book), alpha = 0.3) +
+  xlab("Number of stars") +
+  ylab("avg_score per sentence") +
+    scale_color_manual(values=c("#333333", "#CC0000")) +
+  scale_fill_manual(values=c("#333333", "#CC0000")) 
 ```
 
 
-A couple of words about `RSentiment` package: it has a huge advantage over other R packages used for text mining by XXXX. **HOWEVER**, it's still very bug-y: (e.g. returns named vectors when evaluating single sentences with `score_sentence()`; does not correctly evaluate sentences special characters) and good Lord, it is SLOW. 
+A couple of words about `RSentiment` package: it has a huge advantage over other R packages used for text mining by analysing a sentences as a whole, so taking into account negations (e.g. _I am *not* passionate about singing_.), amplifiers (_I *really* like this song_), etc. **HOWEVER**, it's still very bug-y, e.g. returns named vectors when evaluating single sentences with `score_sentence()`, does not correctly evaluate sentences special characters) and good Lord, it is *SLOW*.
+
+When I started working on this blog I hoped I could tell a gripping story with perhaps a bit convoluted plot but a clear and defite ending. But the reality is a bit more complex and less clear-cut: _Sapiens_ indeed seems to have slightly more positive reviews, at least in terms of proportion of positive words, compared to _Deus Ex_, and this could be due to, ironically, a more positive sentiment of most negative reviews, ha! I will leave investigation whether this is due to imperfection of the scoring method or inconsistencies of human nature to the generations of (data) scientists to come...
+
+On the other hand, when looking at XXX sentiment score of words, or overall sentiment of sentences, there is not much difference between the two books. That's it :) Of course, there's more that can be done with this dataset: exploring whether the format of the book is associated with sentiment scores in any way, or if there's any trend in the sentiment of reviews over time. Feel free to play with those ideas if you're interested and let me know about you results!
   
