@@ -11,7 +11,7 @@ rm(list=ls())
 ```
 So! Following my [previous blog post](https://kkulma.github.io/2017-03-07-amazon-reviews-wordcloud/) where I scraped Amazon reviews of Yuval Harari's [_Sapiens_](https://kkulma.github.io/2017-03-07-amazon-reviews-wordcloud/) to create a wordcloud based on them, here I will compare results of [sentiment analysis](https://en.wikipedia.org/wiki/Sentiment_analysis) performed on Harari's two books: [_Sapiens_](https://en.wikipedia.org/wiki/Sapiens:_A_Brief_History_of_Humankind) and [_Deus Ex_](https://en.wikipedia.org/wiki/Homo_Deus:_A_Brief_History_of_Tomorrow). 
 
-### A QUICK INTRO
+### **A QUICK INTRO**
 
 For the context, _"Sapiens"_ has been published originally in Hebrew in 2011. It, as _Wikipedia_ puts it,
 
@@ -29,20 +29,11 @@ So, in both books the historical, philosophical, economical and biological sythe
 And there's only one way to find out if I'm right, so let's get cracking!
 
 
-### SENTIMENT ANALYSIS 
+### **SENTIMENT ANALYSIS**
 
 After loading necessary packages, I wrap up a scraping process described in my previous post [previous blog post](https://kkulma.github.io/2017-03-07-amazon-reviews-wordcloud/) into a `function_page()` function. I extract the first 13 pages of reviews for both books, to have a comparable amount of data for analysis ( _"Deus Ex"_ has been published in English only in September 2016). After some data cleaning, my data look like this: 
 
-
-```{r java, echo = TRUE}
-# this change is necessary to avoid Error: java.lang.OutOfMemoryError: Java heap space
-# later in the process
-options(java.parameters = "-Xmx3g")
-```
-
-
 ```{r load, echo = TRUE, message=FALSE, error=FALSE, warning=FALSE}
-# load packages
 # load packages
 library(tidyverse)
 library(XML)
@@ -53,12 +44,16 @@ library(RSentiment)
 ```
 
 ```{r scrape_reviews, echo = TRUE, message=FALSE, error=FALSE, warning=FALSE}
+### scaping the reviews
+
+# product codes 
 sapiens_code = "1846558239"
 deus_ex_code = "1910701874"
 
 #Source funtion to Parse Amazon html pages for data
 source("https://raw.githubusercontent.com/rjsaito/Just-R-Things/master/Text%20Mining/amazonscraper.R")
 
+# extract first 12 pages of reviews for each book
 pages <- 12
 
 function_page <- function(page_num, prod_code){
@@ -70,10 +65,10 @@ function_page <- function(page_num, prod_code){
 }
 
 sapiens_reviews <- map2(1:pages, sapiens_code, function_page) %>% bind_rows()
-sapiens_reviews$comments <- gsub("\\.", "\\. ", sapiens_reviews$comments)
+sapiens_reviews$comments <- gsub("\\.", "\\. ", sapiens_reviews$comments) #add space after each full stop 
 
 deusex_reviews <- map2(1:pages, deus_ex_code, function_page) %>% bind_rows()
-deusex_reviews$comments <- gsub("\\.", "\\. ", deusex_reviews$comments)
+deusex_reviews$comments <- gsub("\\.", "\\. ", deusex_reviews$comments) #add space after each full stop 
 
 knitr::kable(head(deusex_reviews, 2))
 ```
@@ -82,6 +77,8 @@ Looks like a good start to me! Next, I'll analyse and compare word sentiments be
 
 ```{r sentiment_analysis, echo = TRUE, message=FALSE, error=FALSE, warning=FALSE, results='hide'}
 ### sentiment analysis ####
+
+# Split a column with the reviews into separate words
 
 words_function <- function(df){
   df_words <- df %>% 
@@ -123,14 +120,11 @@ deusex_words <- deusex_words %>%
   left_join(get_sentiments("afinn"), by = "word") %>% 
   mutate(book = "Deus Ex") %>% unique()
 
-head(sapiens_words)
-```
-
-
-```{r all_words, echo = TRUE}
 all_words <- bind_rows(sapiens_words, deusex_words) 
 all_words %>% arrange(sentiment) %>% head() %>% kable()
+
 ```
+
 
 
 Now we're ready to explore! For the start, star ratings should give me a flavour of the reviews' sentiments. Based on the distribution of given stars, it looks like _Deus Ex_ has more positive reviews than _Sapiens_ (convrsely to my predictions!): 83% of the reviews gave it 4 or 5 stars, whereas for _Sapiens_ it was only 52%. 
@@ -207,116 +201,44 @@ all_words %>%
   select(-c(n, sum, percent)) %>%
   spread(sentiment, percent2) %>%
   ggplot(aes(x = stars, y = positive, fill = book)) +
-    geom_bar(stat = "identity", position = "identity", alpha = 0.6) +
-    scale_color_manual(values=c("#333333", "#CC0000")) +
-  scale_fill_manual(values=c("#333333", "#CC0000")) 
+  geom_bar(stat = "identity", position = position_dodge(), colour="black", alpha = 0.6) +
+  scale_y_continuous(labels = scales::percent) +
+   scale_color_manual(values=c("#333333", "#CC0000")) +
+  scale_fill_manual(values=c("#333333", "#CC0000")) +
+  coord_flip() 
+   
 
 ```
 
 There you go! Weirdly enough, _Sapiens_ reviews with only 1 star are as positive as those with 5 stars! What's going on there? 
 
 
-```{r 1star, echo = TRUE}
-
-all_words %>% 
-  filter(book == "Sapiens" & stars == 1, score >= 2 ) %>% 
-  as.data.frame()
-```
-
+```{r sentence_scores, echo = TRUE}
+#### scoring sentences with sentimentr ####
+  #  install.packages("devtools")
+devtools::install_github("trinker/lexicon")
+devtools::install_github("trinker/sentimentr")
 
 
-```{r pre_sentence, echo=TRUE}
-#### Rsentiment and sentences ####
-
-
-#### scoring sentences ####
-
-sentence_function <- function(df){
-  df_sentence <- df %>% 
-    select(date, comments,  stars, helpful) %>% 
-    mutate(comments = str_replace_all(comments, "[[:digit:]]", "")) %>% #remove all digits
-    unnest_tokens(sentence, comments, token = "sentences") %>%
-    mutate(sentence2 = str_replace_all(sentence, "[^[:alnum:]]", " "),
-           clean_sentence = ifelse(grepl("[[:alpha:]]", sentence), sentence2, NA)) %>% 
-    na.omit() %>%
-    select(-c(sentence2)) #removing all special characters & numbers
-  
-  df_sentence <- df_sentence  %>%
-    mutate(sentence_score = unname(calculate_score(clean_sentence))) 
-  
-  df_sentence
-}
-
-
-# go and get a hot drink while this is running 
-sapiens_sentence <- sentence_function(sapiens_reviews) %>%
-  mutate(book = "Sapiens") %>% unique()
-
-deusex_sentence <- sentence_function(deusex_reviews) %>%
-  mutate(book = "Deus Ex") %>% unique()
-
-all_sentence <-bind_rows(sapiens_sentence, deusex_sentence)
-
-knitr::kable(head(all_sentence))
-```
-
-Let's stop for a minute and have a look at the values that `RSentiment::calculate_score()` just calculated. 
-
-```{r sentence_summary, echo = TRUE }
-all_sentence %>% 
-  group_by(book) %>%
-  summarize(min = min(sentence_score), max = max(sentence_score), mean = mean(sentence_score),
-            median = median(sentence_score))
-```
-
-They range from -7 to 7 for both books. How would the most negative and the most sentence look like?
-
-```{r negative_sentence, echo = TRUE}
-all_sentence %>%
-  filter(sentence_score == -7) %>%
-  as.data.frame() %>% 
-  head() %>% kable()
-```
-
-
-```{r positive_sentence, echo = TRUE}
-all_sentence %>%
-  filter(sentence_score == 7) %>%
-  as.data.frame() %>% 
-  head() %>% kable
-```
-  
-
-  
-```{r avg_score_box, echo = TRUE}  
-  ### adding word_count 
-  
-  str(all_sentence)
-  
-  all_sentence <- all_sentence %>%
-    mutate(word_count = str_count(clean_sentence, "\\S+"),
-           avg_score = round(sentence_score/word_count, 3)) %>%
-    as.data.frame()
-  
-  
-  
-    ggplot(all_sentence, aes(x = book, y = sentence_score, color = book, fill = book)) +
-    geom_boxplot(alpha = 0.1) +
-        scale_color_manual(values=c("#333333", "#CC0000")) +
-  scale_fill_manual(values=c("#333333", "#CC0000")) 
+## combining data.frames    
+sapiens_reviews <- sapiens_reviews %>% 
+      mutate(book = "Sapiens")
     
-```  
-  
-```{r avg_score_star, echo = TRUE}
-    all_sentence %>% 
-  ggplot(aes(as.factor(stars), sentence_score)) +
-  geom_boxplot(aes(fill = book), alpha = 0.3) +
-  xlab("Number of stars") +
-  ylab("avg_score per sentence") +
-    scale_color_manual(values=c("#333333", "#CC0000")) +
-  scale_fill_manual(values=c("#333333", "#CC0000")) 
-```
+deusex_reviews <- deusex_reviews %>% 
+      mutate(book = "Deus Ex")
+    
+all_reviews <-bind_rows(sapiens_reviews, deusex_reviews)
 
+
+
+out2 <- with(all_reviews, sentiment_by(comments, book))    
+
+# sentiment scores by sentence
+head(out2)    
+
+# plotting sentiment scores by sentence
+plot(out2)  
+```
 
 A couple of words about `RSentiment` package: it has a huge advantage over other R packages used for text mining by analysing a sentences as a whole, so taking into account negations (e.g. _I am *not* passionate about singing_.), amplifiers (_I *really* like this song_), etc. **HOWEVER**, it's still very bug-y, e.g. returns named vectors when evaluating single sentences with `score_sentence()`, does not correctly evaluate sentences special characters) and good Lord, it is *SLOW*.
 
