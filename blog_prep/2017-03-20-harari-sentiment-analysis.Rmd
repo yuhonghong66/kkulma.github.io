@@ -5,33 +5,33 @@ output: html_document
 
 ```{r setup, include=FALSE}
 knitr::opts_chunk$set(echo = TRUE)
-
 rm(list=ls())
-
+setwd("/Users/kasia/MEGAsync/projects/harari-sentiment-analysis")
+load('20170326-clear-final-data.RData')
 ```
-So! Following my [previous blog post](https://kkulma.github.io/2017-03-07-amazon-reviews-wordcloud/) where I scraped Amazon reviews of Yuval Harari's [_Sapiens_](https://kkulma.github.io/2017-03-07-amazon-reviews-wordcloud/) to create a wordcloud based on them, here I will compare results of [sentiment analysis](https://en.wikipedia.org/wiki/Sentiment_analysis) performed on Harari's two books: [_Sapiens_](https://en.wikipedia.org/wiki/Sapiens:_A_Brief_History_of_Humankind) and [_Deus Ex_](https://en.wikipedia.org/wiki/Homo_Deus:_A_Brief_History_of_Tomorrow). 
+So! Following my [previous blog post](https://kkulma.github.io/2017-03-07-amazon-reviews-wordcloud/) where I scraped Amazon reviews of Yuval Harari's [_Sapiens_](https://kkulma.github.io/2017-03-07-amazon-reviews-wordcloud/) to create a wordcloud based on them, here I will compare results of [sentiment analysis](https://en.wikipedia.org/wiki/Sentiment_analysis) performed on Harari's two books: [_Sapiens_](https://en.wikipedia.org/wiki/Sapiens:_A_Brief_History_of_Humankind) and [_Homo Deus_](https://en.wikipedia.org/wiki/Homo_Deus:_A_Brief_History_of_Tomorrow). 
 
 ### **A QUICK INTRO**
 
-For the context, _"Sapiens"_ has been published originally in Hebrew in 2011. It, as _Wikipedia_ puts it,
+For the context, _Sapiens_ has been published originally in Hebrew in 2011. It, as _Wikipedia_ puts it,
 
 > [Sapiens] surveys the history of humankind from the evolution of archaic human species in the Stone Age up to the twenty-first century. 
 
-It quickly became a bestseller, but it still took 4 years before Harari published his most recent book, and an overnight hit,  _Deus Ex_:
+It quickly became a bestseller, but it still took 4 years before Harari published his most recent book, and an overnight hit,  _Homo Deus_:
 
 > Homo Deus, as opposed to the previous book, deals more with the abilities acquired by mankind (Homo sapiens) throughout the years of its existence while basing itself as the dominant being in the world, and tries to paint an image of the future of mankind, if any
 _[Wikipedia]_
 
-So, in both books the historical, philosophical, economical and biological sythesis of the human species played a big role and in this sense they are simiar. Still, _Sapiens_ was the first of its kind and it probably set high expectations for the follower book. Additionally, _Deus Ex_ makes some bold predictions about the future of human kind in the world ruled by algorithms and AI, and any such speculation will have a very polarizing effect. 
+So, in both books the historical, philosophical, economical and biological synthesis of the human species played a big role, and in this sense they are similar. Still, _Sapiens_ was the first of its kind and it probably set high expectations for the follower book. Additionally, _Homo Deus_ makes some bold predictions about the future of human kind in the world ruled by algorithms and AI, and any such speculation will have a very polarizing effect. 
 
 
-**For this reason, my prediction is that _Sapiens_ will receive more positive reviews than _Deus Ex_.**
+**For this reason, my prediction is that _Sapiens_ will receive more positive reviews than _Homo Deus_.**
 And there's only one way to find out if I'm right, so let's get cracking!
 
 
 ### **SENTIMENT ANALYSIS**
 
-After loading necessary packages, I wrap up a scraping process described in my previous post [previous blog post](https://kkulma.github.io/2017-03-07-amazon-reviews-wordcloud/) into a `function_page()` function. I extract the first 13 pages of reviews for both books, to have a comparable amount of data for analysis ( _"Deus Ex"_ has been published in English only in September 2016). After some data cleaning, my data look like this: 
+After loading necessary packages, I wrap up a scraping process described in my [previous blog post](https://kkulma.github.io/2017-03-07-amazon-reviews-wordcloud/) into a `function_page()` function. I extract the first 12 pages of reviews for both books to have a comparable amount of data for analysis ( _"Homo Deus"_ has been published in English only in September 2016). After some data cleaning, my data look like this: 
 
 ```{r load, echo = TRUE, message=FALSE, error=FALSE, warning=FALSE}
 # load packages
@@ -40,7 +40,6 @@ library(XML)
 library(xml2)
 library(tidytext)
 library(knitr)
-library(RSentiment)
 ```
 
 ```{r scrape_reviews, echo = TRUE, message=FALSE, error=FALSE, warning=FALSE}
@@ -48,7 +47,7 @@ library(RSentiment)
 
 # product codes 
 sapiens_code = "1846558239"
-deus_ex_code = "1910701874"
+homo_deus_code = "1910701874"
 
 #Source funtion to Parse Amazon html pages for data
 source("https://raw.githubusercontent.com/rjsaito/Just-R-Things/master/Text%20Mining/amazonscraper.R")
@@ -67,10 +66,10 @@ function_page <- function(page_num, prod_code){
 sapiens_reviews <- map2(1:pages, sapiens_code, function_page) %>% bind_rows()
 sapiens_reviews$comments <- gsub("\\.", "\\. ", sapiens_reviews$comments) #add space after each full stop 
 
-deusex_reviews <- map2(1:pages, deus_ex_code, function_page) %>% bind_rows()
-deusex_reviews$comments <- gsub("\\.", "\\. ", deusex_reviews$comments) #add space after each full stop 
+homo_deus_reviews <- map2(1:pages, homo_deus_code, function_page) %>% bind_rows()
+homo_deus_reviews$comments <- gsub("\\.", "\\. ", homo_deus_reviews$comments) #add space after each full stop 
 
-knitr::kable(head(deusex_reviews, 2))
+head(homo_deus_reviews, 2) %>% kable()
 ```
 
 Looks like a good start to me! Next, I'll analyse and compare word sentiments between the two books. To achieve this, I write a function that breaks down review sentences into separate words and removes common English stop words, such as _you_, _at_, _above_, etc.    
@@ -94,10 +93,10 @@ words_function <- function(df){
 }
 
 sapiens_words <- words_function(sapiens_reviews)
-deusex_words <- words_function(deusex_reviews)
+homo_deus_words <- words_function(homo_deus_reviews)
 ```
 
-Now, there are several approches to quantifying the amount of different sentiments in text (and thus using different relevant R lexicons) : you can associate a word with a given emotion, like joy, sadness, fear etc. (**NRC lexicon**), express whether a word is positive or negative (**bing lexicon**) or give it a numeric score between -5 and 5, where values under 0 indicate a negative sentiment and above 0 - the posive. Words scoring close to or equal zero are neutral.
+Now, there are several approaches to quantifying the amount of different sentiments in text (and thus using different relevant R lexicons) : you can associate a word with a given emotion, like joy, sadness, fear etc. (**NRC lexicon**), express whether a word is positive or negative (**bing lexicon**) or give it a numeric score between -5 and 5, where values under 0 indicate a negative sentiment and above 0 - the positive. Words scoring close to or equal zero are neutral (**afinn lexicon**).
 
 
 ```{r sentiments_words, echo=TRUE}
@@ -106,7 +105,7 @@ get_sentiments("nrc") %>% head
 get_sentiments("afinn") %>% head
 ```
 
-All I need to do now is to use `left_join()` to add both lexicons to my data:
+I decided to use **bing** and **afinn** lexicons for my analysis, so all I need to do now is to use `left_join()` to add both of them to my data:
 
 
 ```{r words_score, echo = TRUE}
@@ -115,19 +114,19 @@ sapiens_words <- sapiens_words %>%
   left_join(get_sentiments("afinn"), by = "word") %>% 
   mutate(book = "Sapiens") %>% unique()
 
-deusex_words <- deusex_words %>% 
+homo_deus_words <- homo_deus_words %>% 
   left_join(get_sentiments("bing"), by = "word") %>% 
   left_join(get_sentiments("afinn"), by = "word") %>% 
-  mutate(book = "Deus Ex") %>% unique()
+  mutate(book = "Homo Deus") %>% unique()
 
-all_words <- bind_rows(sapiens_words, deusex_words) 
+all_words <- bind_rows(sapiens_words, homo_deus_words) 
 all_words %>% arrange(sentiment) %>% head() %>% kable()
 
 ```
 
 
 
-Now we're ready to explore! For the start, star ratings should give me a flavour of the reviews' sentiments. Based on the distribution of given stars, it looks like _Deus Ex_ has more positive reviews than _Sapiens_ (convrsely to my predictions!): 83% of the reviews gave it 4 or 5 stars, whereas for _Sapiens_ it was only 52%. 
+Now we're ready to explore! For the start, comparing star ratings should give me a flavour of how positive the reviews were. Based on the distribution of stars, it looks like _Homo Deus_ has more positive reviews than _Sapiens_ (conversely to my predictions!): 
 
 ```{r no_stars, echo = TRUE}
 all_words %>%
@@ -141,10 +140,10 @@ all_words %>%
 
 ```
   
-Is the same trend shown in the sentiment score?
+Is the same trend shown in the **afinn** sentiment score?
 
   
-```{r score_box, echo = TRUE}
+```{r score_box, echo = TRUE, warning=FALSE}
 
 all_words %>% 
   ggplot(aes(x= book, y = score, color = book, fill = book)) +
@@ -153,10 +152,10 @@ all_words %>%
   scale_fill_manual(values=c("#333333", "#CC0000")) 
 ```
 
-Not at all! Distribution of _afnn_ sentiment score for both books looks very similar. Does it mean that the star number reflects different level of positivity in those books? Let's have a look
+Not at all! Distribution of **afinn** sentiment score for both books looks very similar. Does it mean that the star number reflects different level of positivity in different book? Let's have a look:
 
 
-```{r avg_word_sent, echo = TRUE}
+```{r avg_word_sent, echo = TRUE, warning=FALSE}
 ### average sentiment score per star 
 
 all_words %>% 
@@ -167,7 +166,9 @@ all_words %>%
   scale_fill_manual(values=c("#333333", "#CC0000")) 
 ```
 
-Indeed, 1-star and 5-star ratings seem to be more positive for _Sapiens_ than they are for _Deus Ex_. What I find interesing is that for _Sapiens_ 1-star ratings are much more positive than 2- or 3-star ratings: their median is positive, where for the latter 2 is negative. At the same time, _Deus Ex_ shows more consistency between the sentiment score and number of stars given. Will XXX lexicon show similar patterns?
+Not quite. Although the within-star_number difference in sentiment are not drastically different between the two books, indeed _Sapiens_ tends to have its medians shifted upwards compared to _Homo Deus_.
+
+Will **bing** lexicon show similar patterns?
 
 
 ```{r echo = TRUE}
@@ -184,7 +185,7 @@ all_words %>%
   spread(sentiment, percent)
 ```
 
-OK, so simple proportion of positive words seems slightly higher in _Sapiens_. How are these sentiments reflected in number of stars given?
+And again, the sentiments seem to be very similar for both books, this time reflected in the proportion of positive words. How is this possible, given that _Sapiens_ received relatively fewer 4- and 5-star reviews than _Homo Deus_?
 
 
 ```{r echo = TRUE}
@@ -210,10 +211,13 @@ all_words %>%
 
 ```
 
-There you go! Weirdly enough, _Sapiens_ reviews with only 1 star are as positive as those with 5 stars! What's going on there? 
+Because _Sapiens_ reviews contain overall higher proportion of positive words across pretty much all the reviews except 3-star ones, that's why!
 
 
-```{r sentence_scores, echo = TRUE}
+It's all good so far, but comparing sentiments based on separate words can sometimes give misleading results, as such analysis does not take into account  negations (e.g. _I am *not* passionate about singing_.) or amplifiers (_I *really* like this song_), etc. So, I used [`sentimentR` package](https://github.com/trinker/sentimentr) to compare sentiments of whole sentences. 
+
+
+```{r sentence_scores, echo = TRUE, warning=FALSE, message=FALSE, error=FALSE}
 #### scoring sentences with sentimentr ####
   #  install.packages("devtools")
 devtools::install_github("trinker/lexicon")
@@ -224,15 +228,16 @@ devtools::install_github("trinker/sentimentr")
 sapiens_reviews <- sapiens_reviews %>% 
       mutate(book = "Sapiens")
     
-deusex_reviews <- deusex_reviews %>% 
-      mutate(book = "Deus Ex")
+homo_deus_reviews <- homo_deus_reviews %>% 
+      mutate(book = "Homo Deus")
     
-all_reviews <-bind_rows(sapiens_reviews, deusex_reviews)
-
-
-
+all_reviews <-bind_rows(sapiens_reviews, homo_deus_reviews)
 out2 <- with(all_reviews, sentiment_by(comments, book))    
+```
 
+`sentimentR` is a great little gem for text mining: it's very fast, performs tokenization within the library (no need to call `tidytext::unnest_tokens()` separately), gives an option to group results by other variables and produces pretty graphs :)
+
+```{r sentimentr_results, echo = TRUE, warning=FALSE, message=FALSE, error=FALSE}
 # sentiment scores by sentence
 head(out2)    
 
@@ -240,9 +245,35 @@ head(out2)
 plot(out2)  
 ```
 
-A couple of words about `RSentiment` package: it has a huge advantage over other R packages used for text mining by analysing a sentences as a whole, so taking into account negations (e.g. _I am *not* passionate about singing_.), amplifiers (_I *really* like this song_), etc. **HOWEVER**, it's still very bug-y, e.g. returns named vectors when evaluating single sentences with `score_sentence()`, does not correctly evaluate sentences special characters) and good Lord, it is *SLOW*.
+Again, like with previous approaches, sentence - level sentiment looks very similar for both books, perhaps with _Sapiens_ being marginally more positive. However, the really interesting stuff starts when we look at those sentiments grouped by the book **AND** the number of stars:
 
-When I started working on this blog I hoped I could tell a gripping story with perhaps a bit convoluted plot but a clear and defite ending. But the reality is a bit more complex and less clear-cut: _Sapiens_ indeed seems to have slightly more positive reviews, at least in terms of proportion of positive words, compared to _Deus Ex_, and this could be due to, ironically, a more positive sentiment of most negative reviews, ha! I will leave investigation whether this is due to imperfection of the scoring method or inconsistencies of human nature to the generations of (data) scientists to come...
+```{r sentence_star, echo = TRUE}
+out3 <- with(all_reviews, sentiment_by(comments, list(book, stars)))
+out3
+plot(out3)
+```
 
-On the other hand, when looking at XXX sentiment score of words, or overall sentiment of sentences, there is not much difference between the two books. That's it :) Of course, there's more that can be done with this dataset: exploring whether the format of the book is associated with sentiment scores in any way, or if there's any trend in the sentiment of reviews over time. Feel free to play with those ideas if you're interested and let me know about you results!
+
+As you can see, number of stars given by the reviewer doesn't always reflect its overall sentiment! For example, in _Homo Deus_ 5-star reviews tend to be less positive than those with 3 stars. But it's fair to say that this seem to be off the general trend where number of stars positively correlates with the sentence-levels sentiment score. And again, _Sapiens_ reviews with 5 stars are much more positive than respective _Homo Deus_ reviews. At the same time, the more critical reviews with 1 and 2 stars are more negative for _Homo Deus_ than they are for _Sapiens_. Together, this explains why at the book level the sentiment score is very similar between the two books, despite _Homo Deus'_ receiving much more 5-star reviews overall.
+
+Now, it becomes clear how naive my predictions were about comparing sentiment scores betweeen the two books! Obviously, when comparing clearly bad and good books you will find striking differences in reviews' sentiments, but when comparing two highly regarded books written by the same author it's clear that there will be nuances and complexities to it. 
+
+##### **TAKE HOME POINTS**
+
+i) _Homo Deus_ received more positive (4 & 5-star) reviews than _Sapiens_, however
+
+ii) both books had very similar sentiments level based on both, word- and sentence-level scores.
+
+iii) It was mainly due to _Sapiens_ receiving higher sentiment scores for both, most positive and most negative reviews. 
+
+iv) overall, different approaches to sentiment analysis showed consistent results, which is reassuring :-)
+
+
+***
+**funny fact from writing this blog post:** throughout the process I've been writing _Deus Ex_ or `deus_ex` instead of _Homo Deus_ and `homo_deus` respectively, and I only realised it after my partner read the final version of this post... oops! 
   
+  
+***
+#### TECHNICAL RANT 
+
+This post took WAAAY longer that it should, mainly because first I tried using `RSentiment` package for the sentence-level analysis. Unfortunately, this package proved to be very buggy: returns named vectors when evaluating single sentences with `score_sentence()`, does not correctly evaluate sentences with special characters and, let me say it, it is **excruciatingly slow**. I guess it is the lesson to i) choose your tools wisely and ii) 
