@@ -1,13 +1,21 @@
 ---
-title: "2017-03-20-sentiment-analysis-of-hararis-books"
-output: html_document
+title: "2017-03-28-sentiment-analysis-of-hararis-books"
+output: 
+  md_document:
+    variant: markdown_github
+---
+
+---
+layout: post
+title: "2017-03-28-sentiment-analysis-of-hararis-books"
+date: 2017-03-28
 ---
 
 ```{r setup, include=FALSE}
 knitr::opts_chunk$set(echo = TRUE)
 rm(list=ls())
-setwd("/Users/kasia/MEGAsync/projects/harari-sentiment-analysis")
-load('20170326-clear-final-data.RData')
+#setwd("/Users/kasia/MEGAsync/projects/harari-sentiment-analysis")
+#load('20170326-clear-final-data.RData')
 ```
 So! Following my [previous blog post](https://kkulma.github.io/2017-03-07-amazon-reviews-wordcloud/) where I scraped Amazon reviews of Yuval Harari's [_Sapiens_](https://kkulma.github.io/2017-03-07-amazon-reviews-wordcloud/) to create a wordcloud based on them, here I will compare results of [sentiment analysis](https://en.wikipedia.org/wiki/Sentiment_analysis) performed on Harari's two books: [_Sapiens_](https://en.wikipedia.org/wiki/Sapiens:_A_Brief_History_of_Humankind) and [_Homo Deus_](https://en.wikipedia.org/wiki/Homo_Deus:_A_Brief_History_of_Tomorrow). 
 
@@ -254,7 +262,7 @@ plot(out3)
 ```
 
 
-As you can see, number of stars given by the reviewer doesn't always reflect its overall sentiment! For example, in _Homo Deus_ 5-star reviews tend to be less positive than those with 3 stars. But it's fair to say that this seem to be off the general trend where number of stars positively correlates with the sentence-levels sentiment score. And again, _Sapiens_ reviews with 5 stars are much more positive than respective _Homo Deus_ reviews. At the same time, the more critical reviews with 1 and 2 stars are more negative for _Homo Deus_ than they are for _Sapiens_. Together, this explains why at the book level the sentiment score is very similar between the two books, despite _Homo Deus'_ receiving much more 5-star reviews overall.
+As you can see, number of stars given by the reviewer doesn't always exactly reflect its sentiment! Here, I mean examples where fewer - stars reviews show higher sentiment than those reviews with more stars. But it's fair to say that this seem to be off the general trend where number of stars positively correlates with the sentence-levels sentiment score. And again, _Sapiens_ reviews with 5 stars are much more positive than respective _Homo Deus_ reviews. At the same time, the more critical reviews with 1 and 2 stars are more negative for _Homo Deus_ than they are for _Sapiens_. Together, this explains why at the book level the sentiment score is very similar between the two books, despite _Homo Deus'_ receiving much more 5-star reviews overall.
 
 Now, it becomes clear how naive my predictions were about comparing sentiment scores betweeen the two books! Obviously, when comparing clearly bad and good books you will find striking differences in reviews' sentiments, but when comparing two highly regarded books written by the same author it's clear that there will be nuances and complexities to it. 
 
