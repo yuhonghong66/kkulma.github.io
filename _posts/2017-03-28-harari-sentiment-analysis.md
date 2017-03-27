@@ -187,7 +187,7 @@ all_words %>%
   scale_fill_manual(values=c("#333333", "#CC0000"))
 ```
 
-![sentiment_score_boxplot](img/2017-03-28-harari-sentiment-analysis_files/figure-markdown_github/score_box-1.png)
+![sentiment_score_boxplot](/img/2017-03-28-harari-sentiment-analysis_files/figure-markdown_github/score_box-1.png)
 
 Not at all! Distribution of **afinn** sentiment score for both books looks very similar. Does it mean that the star number reflects different level of positivity in different book? Let's have a look:
 
@@ -202,7 +202,7 @@ all_words %>%
   scale_fill_manual(values=c("#333333", "#CC0000"))
 ```
 
-![avg_word_sentiment](img/2017-03-28-harari-sentiment-analysis_files/figure-markdown_github/avg_word_sent-1.png)
+![avg_word_sentiment](/img/2017-03-28-harari-sentiment-analysis_files/figure-markdown_github/avg_word_sent-1.png)
 
 Not quite. Although the within-star\_number difference in sentiment are not drastically different between the two books, indeed *Sapiens* tends to have its medians shifted upwards compared to *Homo Deus*.
 
@@ -253,7 +253,7 @@ all_words %>%
   coord_flip()
 ```
 
-![positive_proportion](img/2017-03-28-harari-sentiment-analysis_files/figure-markdown_github/unnamed-chunk-2-1.png)
+![positive_proportion](/img/2017-03-28-harari-sentiment-analysis_files/figure-markdown_github/unnamed-chunk-2-1.png)
 
 Because *Sapiens* reviews contain overall higher proportion of positive words across pretty much all the reviews except 3-star ones, that's why!
 
@@ -293,7 +293,7 @@ head(out2)
 plot(out2)  
 ```
 
-![sentence_results](img/2017-03-28-harari-sentiment-analysis_files/figure-markdown_github/sentimentr_results-1.png)
+![sentence_results](/img/2017-03-28-harari-sentiment-analysis_files/figure-markdown_github/sentimentr_results-1.png)
 
 Again, like with previous approaches, sentence - level sentiment looks very similar for both books, perhaps with *Sapiens* being marginally more positive. However, the really interesting stuff starts when we look at those sentiments grouped by the book **AND** the number of stars:
 
@@ -318,7 +318,7 @@ out3
 plot(out3)
 ```
 
-![book_star_sentiment](img/2017-03-28-harari-sentiment-analysis_files/figure-markdown_github/sentence_star-1.png)
+![book_star_sentiment](/img/2017-03-28-harari-sentiment-analysis_files/figure-markdown_github/sentence_star-1.png)
 
 As you can see, number of stars given by the reviewer doesn't always exactly reflect its sentiment! Here, I mean examples where fewer - stars reviews show higher sentiment than those reviews with more stars. But it's fair to say that this seem to be off the general trend where number of stars positively correlates with the sentence-levels sentiment score. And again, *Sapiens* reviews with 5 stars are much more positive than respective *Homo Deus* reviews. At the same time, the more critical reviews with 1 and 2 stars are more negative for *Homo Deus* than they are for *Sapiens*. Together, this explains why at the book level the sentiment score is very similar between the two books, despite *Homo Deus'* receiving much more 5-star reviews overall.
 
