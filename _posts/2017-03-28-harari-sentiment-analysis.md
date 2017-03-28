@@ -342,4 +342,4 @@ Now, it becomes clear how naive my predictions were about comparing sentiment sc
 
 #### TECHNICAL RANT
 
-This post took WAAAY longer that it should, mainly because first I tried using `RSentiment` package for the sentence-level analysis. Unfortunately, this package proved to be very buggy: returns named vectors when evaluating single sentences with `score_sentence()`, does not correctly evaluate sentences with special characters and, let me say it, it is **excruciatingly slow**. I guess it is the lesson to i) choose your tools wisely and ii)
+This post took WAAAY longer that it should, mainly because first I tried using `RSentiment` package for the sentence-level analysis. Unfortunately, this package proved to be very buggy: returns named vectors when evaluating single sentences with `score_sentence()`, does not correctly evaluate sentences with special characters and, let me say it, it is **excruciatingly slow**. I guess it is the lesson to choose your tools wisely.
