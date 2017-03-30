@@ -1,0 +1,59 @@
+---
+title: "scraping_web_table_with_R_datasets"
+output: 
+  md_document:
+    variant: markdown_github
+---
+
+---
+---
+layout: post
+title: "scraping_web_table_with_R_datasets"
+date: 2017-03-30
+---
+
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+It's a very quick post on how to get a list of datasets available from within R with their basic description (what package they can be found in, number of observations and variables). It always takes me some time to find the right dataset to showcase whatever process or method I'm working with, so this was really to make my life easier. So! I'm going to scrape the table with a list of R datasets from [here](https://vincentarelbundock.github.io/Rdatasets/datasets.html) using `rvest` and `xml2` packages:
+
+```{r load, echo = TRUE, message=FALSE, warning=FALSE, error=FALSE}
+library(rvest)
+library(xml2)
+library(dplyr)
+
+url <- "https://vincentarelbundock.github.io/Rdatasets/datasets.html"
+
+r_datasets <- read_html(url) %>% # read url
+    html_nodes("table") %>% # extract all the tables
+   .[[2]] %>% # it's the second table we want
+    html_table() # convert it to a usable format (data.frame)
+```
+
+As a result, we get a tidy data frame...
+
+```{r tbl, echo = TRUE}
+
+str(r_datasets)
+
+
+library(knitr)
+r_datasets %>% 
+  select(-c(csv, doc)) %>% 
+  head() %>%
+  kable()
+
+```
+
+
+.. that we can filter freely, according to our needs: 
+
+```{r filter, echo = TRUE}
+
+r_datasets %>% filter(Rows >= 1000 & Cols >= 50) %>% kable()
+
+```
+
+This totally maked my life easier, so hope it will help you, too!
