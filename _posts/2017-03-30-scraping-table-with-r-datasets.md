@@ -1,5 +1,3 @@
-layout: post title: "scraping\_web\_table\_with\_R\_datasets" date: 2017-03-30 ---
-
 It's a very quick post on how to get a list of datasets available from within R with their basic description (what package they can be found in, number of observations and variables). It always takes me some time to find the right dataset to showcase whatever process or method I'm working with, so this was really to make my life easier. So! I'm going to scrape the table with a list of R datasets from [here](https://vincentarelbundock.github.io/Rdatasets/datasets.html) using `rvest` and `xml2` packages:
 
 ``` r
