@@ -59,4 +59,8 @@ r_datasets %>% filter(Rows >= 1000 & Cols >= 50) %>% kable()
 | mosaicData | HELPfull | Health Evaluation and Linkage to Primary Care                                 |  1472|   788| CSV | DOC |
 | ISLR       | Caravan  | The Insurance Company (TIC) Benchmark                                         |  5822|    86| CSV | DOC |
 
+``` r
+r_datasets %>% filter(grepl("cat", Package)) %>% kable()
+```
+
 This totally maked my life easier, so hope it will help you, too!
