@@ -1,0 +1,47 @@
+---
+title: "determining_optimal_number_of_clusters"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+### QUICK INTRO
+
+Recently, I worked a bit with **cluster analysis**: the common method in [unsupervised learning](https://en.wikipedia.org/wiki/Unsupervised_learning) that uses datasets without labeled responses to draw inferences.  
+
+Clustering algorithms try to establish a structure of your data and assign a cluster/segment to each datapoint based on the input data. Most popular clustering learners (e.g. k-means) expect you to specify the number of segments to be found. However, clusters as such don't exist in firm reality, so more often than not you don't know what is the optimal number of clusters for a given dataset.   
+
+**There are multiple methods you can use in order to determine what is the optimal number of segments and that is what I'm going to briefly review in this post.**
+
+I'm not going to go into details of each algorithm's workings, but will provide references you to follow up if you want to know more.
+
+Keep in mind that the list is not complete and that not all appraches will return the same answer. My advise would be: try several methods - the more consistency between different approaches, the better - pick the most commonly returned number of clusters and evaluate their consistency and structure (I'll cover how to do it in the next post).  
+
+So there we go!
+
+### LOAD A DATASET
+
+For this exercise, I'll use a popular `wine` datasets that it's built into R under the `gclus` package. The description of the dataset you can find [here](), but essentially if contains  
+
+```{r dataset, include=TRUE, warning=FALSE, message=FALSE, error=FALSE}
+library(dplyr)
+library(knitr)
+library(gclus)
+
+
+data(wine)
+head(wine) %>% kable()
+table(wine$Class)
+```
+<br>
+
+```{r scaled_wine, include=TRUE}
+scaled_wine <- scale(wine) %>% as.data.frame()
+
+scaled_wine2 <- scaled_wine %>% dplyr::select(-Class)
+
+head(scaled_wine2) %>% kable()
+
+```
