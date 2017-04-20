@@ -54,6 +54,8 @@ r_datasets %>%
 
 r_datasets %>% filter(Rows >= 1000 & Cols >= 50) %>% kable()
 
+r_datasets %>% filter(grepl("cat", Item)) %>% kable()
+
 ```
 
 This totally maked my life easier, so hope it will help you, too!
