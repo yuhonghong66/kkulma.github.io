@@ -11,19 +11,19 @@ knitr::opts_chunk$set(echo = TRUE)
 
 Recently, I worked a bit with **cluster analysis**: the common method in [unsupervised learning](https://en.wikipedia.org/wiki/Unsupervised_learning) that uses datasets without labeled responses to draw inferences.  
 
-Clustering algorithms try to establish a structure of your data and assign a cluster/segment to each datapoint based on the input data. Most popular clustering learners (e.g. k-means) expect you to specify the number of segments to be found. However, clusters as such don't exist in firm reality, so more often than not you don't know what is the optimal number of clusters for a given dataset.   
+Clustering algorithms aim to establish a structure of your data and assign a cluster/segment to each datapoint based on the input data. Most popular clustering learners (e.g. k-means) expect you to specify the number of segments to be found. However, clusters as such don't exist in firm reality, so more often than not you don't know what is the optimal number of clusters for a given dataset.   
 
-**There are multiple methods you can use in order to determine what is the optimal number of segments and that is what I'm going to briefly review in this post.**
+**There are multiple methods you can use in order to determine what is the optimal number of segments for your data and that is what I'm going to review in this post.**
 
-I'm not going to go into details of each algorithm's workings, but will provide references you to follow up if you want to know more.
+I'm not going to go into details of each algorithm's workings, but will provide references for you to follow up if you want to find out more.
 
-Keep in mind that the list is not complete and that not all appraches will return the same answer. My advise would be: try several methods - the more consistency between different approaches, the better - pick the most commonly returned number of clusters and evaluate their consistency and structure (I'll cover how to do it in the next post).  
+Keep in mind that this list is not complete and that not all appraches will return the same answer. My advise would be: try several methods - the more consistency between different approaches, the better - pick the most commonly returned number of clusters and evaluate their consistency and structure (I'll cover how to do it in the next post).  
 
 So there we go!
 
 ### LOAD A DATASET
 
-For this exercise, I'll use a popular `wine` datasets that it's built into R under the `gclus` package. The description of the dataset you can find [here](), but essentially if contains  
+For this exercise, I'll use a popular `wine` datasets that you can find built into R under several packages (e.g. `gclus`, `HDclassif` or `rattle` packages). The full description of the dataset you can find [here](https://archive.ics.uci.edu/ml/datasets/Wine), but essentially if contains results of a chemical analysis of 3 different types of wines grown in the same region in Italy. I'm **guessing** that the three types of wine (described by `Class` variable in the dataset) mean white, red and rose, but I couldn't find anything to confirm it or to disclose which Class in the data corresponds to which wine type... Anyway! Let's load the data and have a quick look at it:  
 
 ```{r dataset, include=TRUE, warning=FALSE, message=FALSE, error=FALSE}
 library(dplyr)
@@ -35,13 +35,108 @@ data(wine)
 head(wine) %>% kable()
 table(wine$Class)
 ```
-<br>
+Next, I'll remove the `Class` variable, as I don't want it to affect clustering, and scale the data. 
 
 ```{r scaled_wine, include=TRUE}
-scaled_wine <- scale(wine) %>% as.data.frame()
+scaled_wine <- scale(wine[-1]) %>% as.data.frame()
 
-scaled_wine2 <- scaled_wine %>% dplyr::select(-Class)
+scaled_wine2 <- scaled_wine
 
 head(scaled_wine2) %>% kable()
 
 ```
+
+<br>
+Now we can start clustering extravaganza!
+
+
+### DETERMINING THE OPTIMAL NUMBER OF CLUSTERS 
+
+#### ELBOW METHOD
+
+In short, the elbow method maps the within-cluster sum of squares onto the number of possible clusters. As a rule of thumb, you pick the number for which you see a significant decrease in the within-cluster dissimilarity, or so called 'elbow'. You can find more details [here](https://www.coursera.org/learn/machine-learning/lecture/Ks0E9/choosing-the-number-of-clusters) or [here](https://rstudio-pubs-static.s3.amazonaws.com/92318_20357e6dd99742eb90232c60c626fa90.html). 
+
+Let's see what happens when we apply the Elbow Method to our dataset:
+
+```{r elbow, include=TRUE}
+wss <- (nrow(scaled_wine2)-1)*sum(apply(scaled_wine2,2,var))
+for (i in 2:15) wss[i] <- sum(kmeans(scaled_wine2,
+                                     centers=i)$withinss)
+plot(1:15, wss, type="b", xlab="Number of Clusters",
+     ylab="Within groups sum of squares")
+```
+
+In this example, we see an 'elbow' at 3 clusters. By adding more clusters than that we get relatively smaller gains. So... 3 clusters!  
+
+<br>
+
+#### SILHOUETTE ANALYSIS  
+
+The silhouette plots display a measure of how close each point in one cluster is to points in the neighboring clusters. This measure ranges from -1 to 1, where 1 means that points are very close to their own cluster and far from other clusters, whereas -1 indicates that points are close to the neighbouring clusters. You'll find more details about silhouette analysis [here](https://en.wikipedia.org/wiki/Silhouette_(clustering)) and [here](https://kapilddatascience.wordpress.com/2015/11/10/using-silhouette-analysis-for-selecting-the-number-of-cluster-for-k-means-clustering/). 
+
+When we run the silhouette analysis on our wine dataset, we get the following graphs with indication on the optimal number of clusters: 
+
+```{r medoids, include=TRUE}
+library(fpc)
+
+pamk.best2 <- pamk(scaled_wine2)
+cat("number of clusters estimated by optimum average silhouette width:", pamk.best2$nc, "\n")
+plot(pam(scaled_wine2, pamk.best2$nc))
+```
+
+<br>
+Thus, it's 3 clusters again.
+
+<br>
+
+####  CALINSKY CRITERION 
+
+yet another method evaluating optimal number of clusters based on within- and between-cluster distances. For more details, see [here](http://ethen8181.github.io/machine-learning/clustering_old/clustering/clustering.html). 
+
+In the example below we set the number of clusters to test between 1 and 10 and we iterated the test 1000 times.
+
+```{r calinsky, include=TRUE,  warning=FALSE, message=FALSE, error=FALSE}
+library(vegan)
+
+cal_fit2 <- cascadeKM(scaled_wine2, 1, 10, iter = 1000)
+plot(cal_fit2, sortg = TRUE, grpmts.plot = TRUE)
+calinski.best2 <- as.numeric(which.max(cal_fit2$results[2,]))
+cat("Calinski criterion optimal number of clusters:", calinski.best2, "\n")
+```
+
+<br>
+Again, 3 clusters!
+
+<br>
+
+#### BAYESIAN INFORMATION CRITERION FOR EXPECTATION - MAXIMIZATION 
+
+Bayesian Information Criterion for expectation-maximization 
+#### initialized by hierarchical clustering for parameterized Gaussian mixture models 
+
+
+# Run the function to see how many clusters
+# it finds to be optimal, set it to search for
+# at least 1 model and up 20.
+
+```{r BIC, include=TRUE, warning=FALSE, message=FALSE, error=FALSE}
+library(mclust)
+
+d_clust2 <- Mclust(as.matrix(scaled_wine2), G=1:20)
+m.best2 <- dim(d_clust2$z)[2]
+
+cat("model-based optimal number of clusters:", m.best2, "\n")
+
+plot(d_clust2)
+```
+
+
+
+
+
+
+
+
+
+
+
