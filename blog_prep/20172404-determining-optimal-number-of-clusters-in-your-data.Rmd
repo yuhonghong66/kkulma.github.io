@@ -89,6 +89,25 @@ Thus, it's 3 clusters again.
 
 <br>
 
+
+#### GAP STATISTICS
+
+```{r gap, include=TRUE}
+library(cluster)
+
+clusGap(scaled_wine2, kmeans, 10, B = 100, verbose = interactive())
+```
+
+
+#### HIERARCHICAL CLUSTERING 
+
+```{r hclust, include = TRUE}
+wine_dist2 <- dist(as.matrix(scaled_wine2))   # find distance matrix 
+plot(hclust(wine_dist2)) 
+```
+
+
+
 ####  CALINSKY CRITERION 
 
 yet another method evaluating optimal number of clusters based on within- and between-cluster distances. For more details, see [here](http://ethen8181.github.io/machine-learning/clustering_old/clustering/clustering.html). 
@@ -111,13 +130,9 @@ Again, 3 clusters!
 
 #### BAYESIAN INFORMATION CRITERION FOR EXPECTATION - MAXIMIZATION 
 
-Bayesian Information Criterion for expectation-maximization 
-#### initialized by hierarchical clustering for parameterized Gaussian mixture models 
+This time in order to determine the optimal number of cluters we simultaneously run and compare several probabilistic models and pick the best one based on their BIC (Bayesian Information Criterion) score. For more details, make sure to read [this](http://rstudio-pubs-static.s3.amazonaws.com/154174_78c021bc71ab42f8add0b2966938a3b8.html) and [this](http://citeseerx.ist.psu.edu/viewdoc/summary?doi=10.1.1.7.8739). 
 
-
-# Run the function to see how many clusters
-# it finds to be optimal, set it to search for
-# at least 1 model and up 20.
+In the example below, we set the search of optimal number of clusters to be between 1 and 20. 
 
 ```{r BIC, include=TRUE, warning=FALSE, message=FALSE, error=FALSE}
 library(mclust)
@@ -130,9 +145,23 @@ cat("model-based optimal number of clusters:", m.best2, "\n")
 plot(d_clust2)
 ```
 
+<br>
 
+And this time, the optimal number of clusters seems to be 4.
 
+<br>
 
+#### AFFINITY PROPAGATION CLUSTERING 
+
+```{r ap, include = TRUE}
+library(apcluster)
+
+d.apclus2 <- apcluster(negDistMat(r=2), scaled_wine2)
+cat("affinity propogation optimal number of clusters:", length(d.apclus2@clusters), "\n")
+
+heatmap(d.apclus2)
+plot(d.apclus2, scaled_wine2)
+```
 
 
 
