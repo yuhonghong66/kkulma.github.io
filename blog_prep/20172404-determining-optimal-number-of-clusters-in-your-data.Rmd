@@ -35,6 +35,9 @@ data(wine)
 head(wine) %>% kable()
 table(wine$Class)
 ```
+
+<br> 
+
 Next, I'll remove the `Class` variable, as I don't want it to affect clustering, and scale the data. 
 
 ```{r scaled_wine, include=TRUE}
@@ -49,6 +52,7 @@ head(scaled_wine2) %>% kable()
 <br>
 Now we can start clustering extravaganza!
 
+<br>
 
 ### DETERMINING THE OPTIMAL NUMBER OF CLUSTERS 
 
@@ -77,6 +81,7 @@ The silhouette plots display a measure of how close each point in one cluster is
 When we run the silhouette analysis on our wine dataset, we get the following graphs with indication on the optimal number of clusters: 
 
 ```{r medoids, include=TRUE}
+
 library(fpc)
 
 pamk.best2 <- pamk(scaled_wine2)
@@ -92,21 +97,40 @@ Thus, it's 3 clusters again.
 
 #### GAP STATISTICS
 
+Gap statistic is a goodness of clustering measure, where for each hypothetical number of clusters k, it compares two functions: log of within-cluster sum of squares (wss) with its expectation under the null reference distribution of the data. In essence, it standardizes wss. It chooses the value where the log(wss) is the farthest below the reference curve, ergo the gap statistic is maximum. Pretty neat!  
+
+If you want to know more, check out [this presentation](https://www.google.co.uk/url?sa=t&rct=j&q=&esrc=s&source=web&cd=8&cad=rja&uact=8&ved=0ahUKEwjen9q-7rjTAhUeM8AKHcijBOEQFghpMAc&url=https%3A%2F%2Flabs.genetics.ucla.edu%2Fhorvath%2FBiostat278%2FGapStatistics.ppt&usg=AFQjCNFaWjeeR1F2UpJIskxYaBFt0eKZKg&sig2=sQflpWNvc8BPu7ovHLyKuQ) for a very good explanation and visualization of what gap statistic is.
+
+Also, for even more details, see [the original paper](chrome-extension://oemmndcbldboiebfnladdacbdfmadadm/https://web.stanford.edu/~hastie/Papers/gap.pdf) where the gap statistic was first described, it's like a good novel!
+
+In the case of our wine dataset, gap analysis picks (again!) 3 cluster as an optimum:
+
 ```{r gap, include=TRUE}
 library(cluster)
 
 clusGap(scaled_wine2, kmeans, 10, B = 100, verbose = interactive())
 ```
 
+<br>
 
 #### HIERARCHICAL CLUSTERING 
+
+Hierarchical clustering is usually used to better understand the structure and relationships in your data and based on them you decide what number of clusters seems appropriate for your purpose. The way the algorithm works is very well described [here](http://www.analytictech.com/networks/hiclus.htm) and [here](http://www.saedsayad.com/clustering_hierarchical.htm). 
+
+How to choose the optimal number of clusters based on the output of this analysis, the dendogram? As a rule of thumb, look for the clusters with the longest 'branches', the shorter they are, the more similar they are to following 'twigs' and 'leaves'. But keep in mind that, as always, the optimal number will also depend on the context, expert knowledge, application, etc.
+
+In our case, the solution is rather blurred:
 
 ```{r hclust, include = TRUE}
 wine_dist2 <- dist(as.matrix(scaled_wine2))   # find distance matrix 
 plot(hclust(wine_dist2)) 
 ```
 
+<br>
 
+Personally, I would go for something between 2 and 4 clusters. What do you think? :-)
+
+<br>
 
 ####  CALINSKY CRITERION 
 
@@ -115,6 +139,7 @@ yet another method evaluating optimal number of clusters based on within- and be
 In the example below we set the number of clusters to test between 1 and 10 and we iterated the test 1000 times.
 
 ```{r calinsky, include=TRUE,  warning=FALSE, message=FALSE, error=FALSE}
+
 library(vegan)
 
 cal_fit2 <- cascadeKM(scaled_wine2, 1, 10, iter = 1000)
