@@ -1,6 +1,9 @@
 ---
 title: "determining_optimal_number_of_clusters"
-output: html_document
+output: 
+  md_document:
+    variant: markdown_github
+
 ---
 
 ```{r setup, include=FALSE}
@@ -17,11 +20,11 @@ Clustering algorithms aim to establish a structure of your data and assign a clu
 
 I'm not going to go into details of each algorithm's workings, but will provide references for you to follow up if you want to find out more.
 
-Keep in mind that this list is not complete and that not all appraches will return the same answer. My advise would be: try several methods - the more consistency between different approaches, the better - pick the most commonly returned number of clusters and evaluate their consistency and structure (I'll cover how to do it in the next post).  
+Keep in mind that this list is not complete (for more complete list check out this [excellent StackOverflow answer](http://stackoverflow.com/a/15376462) ) and that not all approaches will return the same answer. In such case, my advise would be: try several methods - the more consistency between different approaches, the better - pick the most commonly returned number of clusters, evaluate their consistency and structure (I'll cover how to do it in the next post) and check if they make sense from the real world point of view.  
 
 So there we go!
 
-### LOAD A DATASET
+### WINE DATASET
 
 For this exercise, I'll use a popular `wine` datasets that you can find built into R under several packages (e.g. `gclus`, `HDclassif` or `rattle` packages). The full description of the dataset you can find [here](https://archive.ics.uci.edu/ml/datasets/Wine), but essentially if contains results of a chemical analysis of 3 different types of wines grown in the same region in Italy. I'm **guessing** that the three types of wine (described by `Class` variable in the dataset) mean white, red and rose, but I couldn't find anything to confirm it or to disclose which Class in the data corresponds to which wine type... Anyway! Let's load the data and have a quick look at it:  
 
@@ -56,7 +59,7 @@ Now we can start clustering extravaganza!
 
 ### DETERMINING THE OPTIMAL NUMBER OF CLUSTERS 
 
-#### ELBOW METHOD
+#### 1. ELBOW METHOD
 
 In short, the elbow method maps the within-cluster sum of squares onto the number of possible clusters. As a rule of thumb, you pick the number for which you see a significant decrease in the within-cluster dissimilarity, or so called 'elbow'. You can find more details [here](https://www.coursera.org/learn/machine-learning/lecture/Ks0E9/choosing-the-number-of-clusters) or [here](https://rstudio-pubs-static.s3.amazonaws.com/92318_20357e6dd99742eb90232c60c626fa90.html). 
 
@@ -74,7 +77,7 @@ In this example, we see an 'elbow' at 3 clusters. By adding more clusters than t
 
 <br>
 
-#### SILHOUETTE ANALYSIS  
+#### 2. SILHOUETTE ANALYSIS  
 
 The silhouette plots display a measure of how close each point in one cluster is to points in the neighboring clusters. This measure ranges from -1 to 1, where 1 means that points are very close to their own cluster and far from other clusters, whereas -1 indicates that points are close to the neighbouring clusters. You'll find more details about silhouette analysis [here](https://en.wikipedia.org/wiki/Silhouette_(clustering)) and [here](https://kapilddatascience.wordpress.com/2015/11/10/using-silhouette-analysis-for-selecting-the-number-of-cluster-for-k-means-clustering/). 
 
@@ -95,7 +98,7 @@ Thus, it's 3 clusters again.
 <br>
 
 
-#### GAP STATISTICS
+#### 3. GAP STATISTICS
 
 Gap statistic is a goodness of clustering measure, where for each hypothetical number of clusters k, it compares two functions: log of within-cluster sum of squares (wss) with its expectation under the null reference distribution of the data. In essence, it standardizes wss. It chooses the value where the log(wss) is the farthest below the reference curve, ergo the gap statistic is maximum. Pretty neat!  
 
@@ -113,7 +116,7 @@ clusGap(scaled_wine2, kmeans, 10, B = 100, verbose = interactive())
 
 <br>
 
-#### HIERARCHICAL CLUSTERING 
+#### 4. HIERARCHICAL CLUSTERING 
 
 Hierarchical clustering is usually used to better understand the structure and relationships in your data and based on them you decide what number of clusters seems appropriate for your purpose. The way the algorithm works is very well described [here](http://www.analytictech.com/networks/hiclus.htm) and [here](http://www.saedsayad.com/clustering_hierarchical.htm). 
 
@@ -132,7 +135,7 @@ Personally, I would go for something between 2 and 4 clusters. What do you think
 
 <br>
 
-####  CALINSKY CRITERION 
+#### 5. CALINSKY CRITERION 
 
 yet another method evaluating optimal number of clusters based on within- and between-cluster distances. For more details, see [here](http://ethen8181.github.io/machine-learning/clustering_old/clustering/clustering.html). 
 
@@ -153,7 +156,7 @@ Again, 3 clusters!
 
 <br>
 
-#### BAYESIAN INFORMATION CRITERION FOR EXPECTATION - MAXIMIZATION 
+#### 6. BAYESIAN INFORMATION CRITERION FOR EXPECTATION - MAXIMIZATION 
 
 This time in order to determine the optimal number of cluters we simultaneously run and compare several probabilistic models and pick the best one based on their BIC (Bayesian Information Criterion) score. For more details, make sure to read [this](http://rstudio-pubs-static.s3.amazonaws.com/154174_78c021bc71ab42f8add0b2966938a3b8.html) and [this](http://citeseerx.ist.psu.edu/viewdoc/summary?doi=10.1.1.7.8739). 
 
@@ -176,9 +179,20 @@ And this time, the optimal number of clusters seems to be 4.
 
 <br>
 
-#### AFFINITY PROPAGATION CLUSTERING 
+#### 7. AFFINITY PROPAGATION CLUSTERING 
 
-```{r ap, include = TRUE}
+I'll be quite honest with you: I've struggled to get my head around what affinity propagation is about! I understood that it clusters data by identifying a subset of representative examples, so called **exemplars**. And it does so by considering all data points as potential exemplars, but the rest is magic to me..  
+
+>> [and] exchanging real-valued messages between data points until a high-quality set of exemplars and corresponding clusters gradually emerges. 
+
+*(according to [Delbert Dueck](www.cs.columbia.edu/~delbert/docs/DDueck-thesis_small.pdf))*
+
+So if you have a better explanation or better materials.. send them over!
+
+In our particular case, this algorithm identified 
+
+
+```{r ap, include = TRUE, message=FALSE, error=FALSE, warning=FALSE}
 library(apcluster)
 
 d.apclus2 <- apcluster(negDistMat(r=2), scaled_wine2)
@@ -191,6 +205,9 @@ plot(d.apclus2, scaled_wine2)
 
 
 
+### SUMMARY
+
+At least 4 (5, if including hierarchical clustering results) out of 7 tested algorithms suggested 3 as an optimal number of clusters for our data, which is a reasonable way forward, given that the analysed data contained information for 3 classes of wines ;-) In the next post I'll evaluate those clusters in terms of their stability: how dissolved they are or how often they get recovered.  
 
 
 
