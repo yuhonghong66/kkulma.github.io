@@ -15,7 +15,7 @@ So there we go!
 
 ### WINE DATASET
 
-For this exercise, I'll use a popular `wine` datasets that you can find built into R under several packages (e.g. `gclus`, `HDclassif` or `rattle` packages). The full description of the dataset you can find [here](https://archive.ics.uci.edu/ml/datasets/Wine), but essentially if contains results of a chemical analysis of 3 different types of wines grown in the same region in Italy. I'm **guessing** that the three types of wine (described by `Class` variable in the dataset) mean white, red and rose, but I couldn't find anything to confirm it or to disclose which Class in the data corresponds to which wine type... Anyway! Let's load the data and have a quick look at it:
+For this exercise, I'll use a popular `wine` dataset that you can find built into R under several packages (e.g. `gclus`, `HDclassif` or `rattle` packages). The full description of the dataset you can find [here](https://archive.ics.uci.edu/ml/datasets/Wine), but essentially if contains results of a chemical analysis of 3 different types of wines grown in the same region in Italy. I'm **guessing** that the three types of wine (described by `Class` variable in the dataset) mean white, red and rose, but I couldn't find anything to confirm it or to disclose which Class in the data corresponds to which wine type... Anyway! Let's load the data and have a quick look at it:
 
 ``` r
 library(dplyr)
