@@ -236,7 +236,7 @@ I'll be quite honest with you: I've struggled to get my head around what affinit
 
 So if you have a better explanation or better materials.. send them over!
 
-In our particular case, this algorithm identified
+In our particular case, this algorithm identified.. 15 clusters!
 
 ``` r
 library(apcluster)
