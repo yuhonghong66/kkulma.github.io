@@ -1,6 +1,6 @@
-### QUICK INTRO
+Recently, I worked a bit with **cluster analysis**: the common method in [unsupervised learning](https://en.wikipedia.org/wiki/Unsupervised_learning) that uses datasets without labeled responses to draw inferences. I wanted to put my notes together and write it all down before I forget it, thus the blog post. For the start, I'll tackle multiple approaches to how to determine the number of clusters in your data.
 
-Recently, I worked a bit with **cluster analysis**: the common method in [unsupervised learning](https://en.wikipedia.org/wiki/Unsupervised_learning) that uses datasets without labeled responses to draw inferences.
+### QUICK INTRO
 
 Clustering algorithms aim to establish a structure of your data and assign a cluster/segment to each datapoint based on the input data. Most popular clustering learners (e.g. k-means) expect you to specify the number of segments to be found. However, clusters as such don't exist in firm reality, so more often than not you don't know what is the optimal number of clusters for a given dataset.
 
@@ -232,7 +232,7 @@ cat("model-based optimal number of clusters:", m.best2, "\n")
 plot(d_clust2)
 ```
 
-![bic](/img/2017-04-24-determining-optimal-number-of-clusters-in-your-data_files/figure-markdown_github/BIC-1.png)![BIC-2](/img/2017-04-24-determining-optimal-number-of-clusters-in-your-data_files/figure-markdown_github/BIC-2.png)![BIC-3](/img/2017-04-24-determining-optimal-number-of-clusters-in-your-data_files/figure-markdown_github/BIC-3.png)![BIC-4](/img/2017-04-24-determining-optimal-number-of-clusters-in-your-data_files/figure-markdown_github/BIC-4.png)
+![bic](/img/2017-04-24-determining-optimal-number-of-clusters-in-your-data_files/figure-markdown_github/BIC-1.png)![bBIC-2](/img/2017-04-24-determining-optimal-number-of-clusters-in-your-data_files/figure-markdown_github/BIC-2.png)![BIC-3](/img/2017-04-24-determining-optimal-number-of-clusters-in-your-data_files/figure-markdown_github/BIC-3.png)![BIC-4](/img/2017-04-24-determining-optimal-number-of-clusters-in-your-data_files/figure-markdown_github/BIC-4.png)
 
 <br>
 
@@ -273,7 +273,7 @@ heatmap(d.apclus2)
 plot(d.apclus2, scaled_wine2)
 ```
 
-![ap-2](/img/2017-04-24-determining-optimal-number-of-clusters-in-your-data_files/figure-markdown_github/ap-2.png)
+![ap2](/img/2017-04-24-determining-optimal-number-of-clusters-in-your-data_files/figure-markdown_github/ap-2.png)
 
 ### SUMMARY
 
