@@ -1,7 +1,6 @@
-Recently, I worked a bit with **cluster analysis**: the common method in [unsupervised learning](https://en.wikipedia.org/wiki/Unsupervised_learning) that uses datasets without labeled responses to draw inferences. I know that in 3 months time I won't remember a thing from everything I learnt now, so here noted things that I found most useful.  
-
-
 ### QUICK INTRO
+
+Recently, I worked a bit with **cluster analysis**: the common method in [unsupervised learning](https://en.wikipedia.org/wiki/Unsupervised_learning) that uses datasets without labeled responses to draw inferences.
 
 Clustering algorithms aim to establish a structure of your data and assign a cluster/segment to each datapoint based on the input data. Most popular clustering learners (e.g. k-means) expect you to specify the number of segments to be found. However, clusters as such don't exist in firm reality, so more often than not you don't know what is the optimal number of clusters for a given dataset.
 
@@ -15,7 +14,7 @@ So there we go!
 
 ### WINE DATASET
 
-For this exercise, I'll use a popular `wine` dataset that you can find built into R under several packages (e.g. `gclus`, `HDclassif` or `rattle` packages). The full description of the dataset you can find [here](https://archive.ics.uci.edu/ml/datasets/Wine), but essentially if contains results of a chemical analysis of 3 different types of wines grown in the same region in Italy. I'm **guessing** that the three types of wine (described by `Class` variable in the dataset) mean white, red and rose, but I couldn't find anything to confirm it or to disclose which Class in the data corresponds to which wine type... Anyway! Let's load the data and have a quick look at it:
+For this exercise, I'll use a popular `wine` datasets that you can find built into R under several packages (e.g. `gclus`, `HDclassif` or `rattle` packages). The full description of the dataset you can find [here](https://archive.ics.uci.edu/ml/datasets/Wine), but essentially if contains results of a chemical analysis of 3 different types of wines grown in the same region in Italy. I'm **guessing** that the three types of wine (described by `Class` variable in the dataset) mean white, red and rose, but I couldn't find anything to confirm it or to disclose which Class in the data corresponds to which wine type... Anyway! Let's load the data and have a quick look at it:
 
 ``` r
 library(dplyr)
@@ -35,6 +34,7 @@ head(wine) %>% kable()
 |      1|    14.37|   1.95|  2.50|        16.8|        113|     3.85|        3.49|          0.24|             2.18|       7.80|  0.86|   3.45|     1480|
 |      1|    13.24|   2.59|  2.87|        21.0|        118|     2.80|        2.69|          0.39|             1.82|       4.32|  1.04|   2.93|      735|
 |      1|    14.20|   1.76|  2.45|        15.2|        112|     3.27|        3.39|          0.34|             1.97|       6.75|  1.05|   2.85|     1450|
+|   <br>|         |       |      |            |           |         |            |              |                 |           |      |       |         |
 
 ``` r
 table(wine$Class)
@@ -49,9 +49,9 @@ table(wine$Class)
 Next, I'll remove the `Class` variable, as I don't want it to affect clustering, and scale the data.
 
 ``` r
-scaled_wine <- scale(wine[-1]) %>% as.data.frame()
+scaled_wine <- scale(wine) %>% as.data.frame()
 
-scaled_wine2 <- scaled_wine
+scaled_wine2 <- scaled_wine[-1]
 
 head(scaled_wine2) %>% kable()
 ```
@@ -65,7 +65,9 @@ head(scaled_wine2) %>% kable()
 |  0.2948684|   0.2270533|   1.8352256|   0.4506745|  1.2783790|  0.8067217|   0.6614853|     0.2261576|        0.4002753|  -0.3183774|   0.3610679|  0.4483365|  -0.0377675|
 |  1.4773871|  -0.5159113|   0.3043010|  -1.2860793|  0.8582840|  1.5576991|   1.3622851|    -0.1755994|        0.6623487|   0.7298108|   0.4048188|  0.3356589|   2.2327407|
 
-<br> Now we can start clustering extravaganza!
+<br> Keep in mind that many presented algorithms rely on random starts (e.g. k-means), so I set a seed wherever I can so that we have reproducible examples.
+
+Now we can start clustering extravaganza!
 
 <br>
 
@@ -78,6 +80,8 @@ In short, the elbow method maps the within-cluster sum of squares onto the numbe
 Let's see what happens when we apply the Elbow Method to our dataset:
 
 ``` r
+set.seed(13)
+
 wss <- (nrow(scaled_wine2)-1)*sum(apply(scaled_wine2,2,var))
 for (i in 2:15) wss[i] <- sum(kmeans(scaled_wine2,
                                      centers=i)$withinss)
@@ -85,7 +89,7 @@ plot(1:15, wss, type="b", xlab="Number of Clusters",
      ylab="Within groups sum of squares")
 ```
 
-![elbow](/img/2017-04-24-determining-optimal-number-of-clusters-in-your-data_files/figure-markdown_github/elbow-1.png)
+![wss](/img/2017-04-24-determining-optimal-number-of-clusters-in-your-data_files/figure-markdown_github/elbow-1.png)
 
 In this example, we see an 'elbow' at 3 clusters. By adding more clusters than that we get relatively smaller gains. So... 3 clusters!
 
@@ -100,6 +104,8 @@ When we run the silhouette analysis on our wine dataset, we get the following gr
 ``` r
 library(fpc)
 
+set.seed(13)
+
 pamk.best2 <- pamk(scaled_wine2)
 cat("number of clusters estimated by optimum average silhouette width:", pamk.best2$nc, "\n")
 ```
@@ -110,7 +116,7 @@ cat("number of clusters estimated by optimum average silhouette width:", pamk.be
 plot(pam(scaled_wine2, pamk.best2$nc))
 ```
 
-![fpc](/img/2017-04-24-determining-optimal-number-of-clusters-in-your-data_files/figure-markdown_github/medoids-1.png)![fpc2](/img/2017-04-24-determining-optimal-number-of-clusters-in-your-data_files/figure-markdown_github/medoids-2.png)
+![pamk](/img/2017-04-24-determining-optimal-number-of-clusters-in-your-data_files/figure-markdown_github/medoids-1.png)![pamk2](/img/2017-04-24-determining-optimal-number-of-clusters-in-your-data_files/figure-markdown_github/medoids-2.png)
 
 <br> Thus, it's 3 clusters again.
 
@@ -129,6 +135,8 @@ In the case of our wine dataset, gap analysis picks (again!) 3 cluster as an opt
 ``` r
 library(cluster)
 
+set.seed(13)
+
 clusGap(scaled_wine2, kmeans, 10, B = 100, verbose = interactive())
 ```
 
@@ -137,16 +145,16 @@ clusGap(scaled_wine2, kmeans, 10, B = 100, verbose = interactive())
     ## B=100 simulated reference sets, k = 1..10; spaceH0="scaledPCA"
     ##  --> Number of clusters (method 'firstSEmax', SE.factor=1): 3
     ##           logW   E.logW       gap     SE.sim
-    ##  [1,] 5.377557 5.864003 0.4864461 0.01296934
-    ##  [2,] 5.203225 5.759251 0.5560260 0.01305880
-    ##  [3,] 5.066921 5.697901 0.6309795 0.01219858
-    ##  [4,] 5.023936 5.652294 0.6283580 0.01198746
-    ##  [5,] 4.993614 5.614597 0.6209832 0.01205109
-    ##  [6,] 4.968489 5.584357 0.6158676 0.01187981
-    ##  [7,] 4.929385 5.556141 0.6267560 0.01170964
-    ##  [8,] 4.907441 5.531165 0.6237232 0.01151177
-    ##  [9,] 4.892884 5.507742 0.6148583 0.01188460
-    ## [10,] 4.857010 5.487277 0.6302677 0.01113366
+    ##  [1,] 5.377557 5.864072 0.4865153 0.01261541
+    ##  [2,] 5.203502 5.757547 0.5540456 0.01356018
+    ##  [3,] 5.066921 5.697040 0.6301193 0.01404664
+    ##  [4,] 5.033404 5.651970 0.6185658 0.01410140
+    ##  [5,] 4.992739 5.616114 0.6233751 0.01342023
+    ##  [6,] 4.955442 5.584673 0.6292313 0.01304916
+    ##  [7,] 4.933420 5.556602 0.6231820 0.01250233
+    ##  [8,] 4.908585 5.531523 0.6229379 0.01299415
+    ##  [9,] 4.884336 5.508464 0.6241281 0.01209969
+    ## [10,] 4.858595 5.488182 0.6295870 0.01336910
 
 <br>
 
@@ -159,6 +167,8 @@ How to choose the optimal number of clusters based on the output of this analysi
 In our case, the solution is rather blurred:
 
 ``` r
+set.seed(13)
+
 wine_dist2 <- dist(as.matrix(scaled_wine2))   # find distance matrix
 plot(hclust(wine_dist2))
 ```
@@ -179,6 +189,8 @@ In the example below we set the number of clusters to test between 1 and 10 and 
 
 ``` r
 library(vegan)
+
+set.seed(13)
 
 cal_fit2 <- cascadeKM(scaled_wine2, 1, 10, iter = 1000)
 plot(cal_fit2, sortg = TRUE, grpmts.plot = TRUE)
@@ -206,6 +218,8 @@ In the example below, we set the search of optimal number of clusters to be betw
 ``` r
 library(mclust)
 
+set.seed(13)
+
 d_clust2 <- Mclust(as.matrix(scaled_wine2), G=1:20)
 m.best2 <- dim(d_clust2$z)[2]
 
@@ -218,7 +232,7 @@ cat("model-based optimal number of clusters:", m.best2, "\n")
 plot(d_clust2)
 ```
 
-![bic1](/img/2017-04-24-determining-optimal-number-of-clusters-in-your-data_files/figure-markdown_github/BIC-1.png)![bic2](/img/2017-04-24-determining-optimal-number-of-clusters-in-your-data_files/figure-markdown_github/BIC-2.png)![bic3](/img/2017-04-24-determining-optimal-number-of-clusters-in-your-data_files/figure-markdown_github/BIC-3.png)![bic4](/img/2017-04-24-determining-optimal-number-of-clusters-in-your-data_files/figure-markdown_github/BIC-4.png)
+![bic](/img/2017-04-24-determining-optimal-number-of-clusters-in-your-data_files/figure-markdown_github/BIC-1.png)![BIC-2](/img/2017-04-24-determining-optimal-number-of-clusters-in-your-data_files/figure-markdown_github/BIC-2.png)![BIC-3](/img/2017-04-24-determining-optimal-number-of-clusters-in-your-data_files/figure-markdown_github/BIC-3.png)![BIC-4](/img/2017-04-24-determining-optimal-number-of-clusters-in-your-data_files/figure-markdown_github/BIC-4.png)
 
 <br>
 
@@ -236,10 +250,12 @@ I'll be quite honest with you: I've struggled to get my head around what affinit
 
 So if you have a better explanation or better materials.. send them over!
 
-In our particular case, this algorithm identified.. 15 clusters!
+In our particular case, this algorithm identified
 
 ``` r
 library(apcluster)
+
+set.seed(13)
 
 d.apclus2 <- apcluster(negDistMat(r=2), scaled_wine2)
 cat("affinity propogation optimal number of clusters:", length(d.apclus2@clusters), "\n")
@@ -257,7 +273,7 @@ heatmap(d.apclus2)
 plot(d.apclus2, scaled_wine2)
 ```
 
-![ap2](/img/2017-04-24-determining-optimal-number-of-clusters-in-your-data_files/figure-markdown_github/ap-2.png)
+![ap-2](/img/2017-04-24-determining-optimal-number-of-clusters-in-your-data_files/figure-markdown_github/ap-2.png)
 
 ### SUMMARY
 

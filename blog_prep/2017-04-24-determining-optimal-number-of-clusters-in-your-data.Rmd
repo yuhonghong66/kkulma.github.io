@@ -36,6 +36,10 @@ library(gclus)
 
 data(wine)
 head(wine) %>% kable()
+```
+<br>
+
+```{r table, include=TRUE}
 table(wine$Class)
 ```
 
@@ -44,16 +48,18 @@ table(wine$Class)
 Next, I'll remove the `Class` variable, as I don't want it to affect clustering, and scale the data. 
 
 ```{r scaled_wine, include=TRUE}
-scaled_wine <- scale(wine[-1]) %>% as.data.frame()
+scaled_wine <- scale(wine) %>% as.data.frame()
 
-scaled_wine2 <- scaled_wine
+scaled_wine2 <- scaled_wine[-1]
 
 head(scaled_wine2) %>% kable()
 
 ```
 
 <br>
-Now we can start clustering extravaganza!
+Keep in mind that many presented algorithms rely on random starts (e.g. k-means), so I set a seed wherever I can so that we have reproducible examples.
+
+Now we can start clustering extravaganza! 
 
 <br>
 
@@ -66,6 +72,8 @@ In short, the elbow method maps the within-cluster sum of squares onto the numbe
 Let's see what happens when we apply the Elbow Method to our dataset:
 
 ```{r elbow, include=TRUE}
+set.seed(13)
+
 wss <- (nrow(scaled_wine2)-1)*sum(apply(scaled_wine2,2,var))
 for (i in 2:15) wss[i] <- sum(kmeans(scaled_wine2,
                                      centers=i)$withinss)
@@ -84,8 +92,9 @@ The silhouette plots display a measure of how close each point in one cluster is
 When we run the silhouette analysis on our wine dataset, we get the following graphs with indication on the optimal number of clusters: 
 
 ```{r medoids, include=TRUE}
-
 library(fpc)
+
+set.seed(13)
 
 pamk.best2 <- pamk(scaled_wine2)
 cat("number of clusters estimated by optimum average silhouette width:", pamk.best2$nc, "\n")
@@ -111,6 +120,8 @@ In the case of our wine dataset, gap analysis picks (again!) 3 cluster as an opt
 ```{r gap, include=TRUE}
 library(cluster)
 
+set.seed(13)
+
 clusGap(scaled_wine2, kmeans, 10, B = 100, verbose = interactive())
 ```
 
@@ -125,6 +136,8 @@ How to choose the optimal number of clusters based on the output of this analysi
 In our case, the solution is rather blurred:
 
 ```{r hclust, include = TRUE}
+set.seed(13)
+
 wine_dist2 <- dist(as.matrix(scaled_wine2))   # find distance matrix 
 plot(hclust(wine_dist2)) 
 ```
@@ -145,6 +158,8 @@ In the example below we set the number of clusters to test between 1 and 10 and 
 
 library(vegan)
 
+set.seed(13)
+
 cal_fit2 <- cascadeKM(scaled_wine2, 1, 10, iter = 1000)
 plot(cal_fit2, sortg = TRUE, grpmts.plot = TRUE)
 calinski.best2 <- as.numeric(which.max(cal_fit2$results[2,]))
@@ -164,6 +179,8 @@ In the example below, we set the search of optimal number of clusters to be betw
 
 ```{r BIC, include=TRUE, warning=FALSE, message=FALSE, error=FALSE}
 library(mclust)
+
+set.seed(13)
 
 d_clust2 <- Mclust(as.matrix(scaled_wine2), G=1:20)
 m.best2 <- dim(d_clust2$z)[2]
@@ -194,6 +211,8 @@ In our particular case, this algorithm identified
 
 ```{r ap, include = TRUE, message=FALSE, error=FALSE, warning=FALSE}
 library(apcluster)
+
+set.seed(13)
 
 d.apclus2 <- apcluster(negDistMat(r=2), scaled_wine2)
 cat("affinity propogation optimal number of clusters:", length(d.apclus2@clusters), "\n")
