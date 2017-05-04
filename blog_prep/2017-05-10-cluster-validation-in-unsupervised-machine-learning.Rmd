@@ -1,0 +1,101 @@
+---
+title: "2017-05-10-evaluating-clusters-in-unsupervised-learning"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+In the [previous post](https://kkulma.github.io/2017-04-24-determining-optimal-number-of-clusters-in-your-data/) I showed several methods that can be used to determine the optimal number of clusters in your data - this often needs to be defined for the actual clustering algorithm to run. Once it's run, however, there's no guarantee that those clusters are stable and reliable.
+
+**In this post I'll show a couple of tests for cluster validation that can be easily run in `R`.**
+
+Again, the list is not exhaustive, but it's a good start. So let's start!
+
+
+## VALIDATION MEASURES 
+
+### INTERNAL MEASURES 
+
+As the name suggests, internal validation measures only rely on information in the data, that is the characteristics of the clusters themselves, such as compactness and separation. In the perfect world we want our clusters to as compact and separated as possible. How can this be measured?
+
+**CONNECTIVITY**
+
+This measure reflects the extent items are placed in the same cluster as their nearest neighbors in the data space - or, in other words, the degree of connectedness of the clusters. And yes, you guessed it, **it should be minimised**.
+
+<br>
+
+**SILHOUETTE WIDTH** 
+
+This index defines compactness based on the pairwise distances between all elements in the cluster, and separation based on pairwise distances between all points in the cluster and all points in the closest other cluster ([Van Craenendonck & Blockeel 2015](https://lirias.kuleuven.be/bitstream/123456789/504712/1/automl_camera.pdf)) We used `silhouette` function to asses the optimal number of clusters in the previous post - and like there, **the values as close to (+) 1 as possible are mose desirable**. 
+
+<br>
+
+**DUNN INDEX**
+
+Dunn Index represents the ratio between the smallest distance between observations not in the same cluster to the largest intra-cluster distance. As you can imagine, the nominator should be maximised and the denomitor minimised, **therefore the index should be maximized**.
+
+
+(BTW, you can find a more detailed description of various internat cluster validation measures and their performance in this [Hui Xiong's paper](datamining.rutgers.edu/publication/internalmeasures.pdf).)
+
+<br>
+
+### STABILITY MEASURES 
+
+
+### BIOLOGICAL MEASURES 
+
+
+
+To find out more about all these measures, check out the `clValid` [vignette](https://www.google.co.uk/url?sa=t&rct=j&q=&esrc=s&source=web&cd=8&cad=rja&uact=8&sqi=2&ved=0ahUKEwiSzaO5lNfTAhWKA8AKHVDRD88QFghaMAc&url=http%3A%2F%2Fhbanaszak.mjr.uw.edu.pl%2FTempTxt%2FBrockEtAl_2008_CIValidAnRPackageForClusterValidation.pdf&usg=AFQjCNGeuXuGr1_CugB1rLygXSojbs1DvQ&sig2=EkSz5W04IXOfCAUSQBLKvw)  or by typing `?clValid` in your R console. 
+
+
+## VALIDATION PACKAGES AND ALGORITHMS 
+
+I'll rely on the scaled `wine` dataset that I used in my previous post (if you missed it, it's [here](https://kkulma.github.io/2017-04-24-determining-optimal-number-of-clusters-in-your-data/)). 
+
+### Clusterwise cluster stability assessment by resampling (fpc::clusterboot())
+
+```{r wine, include=FALSE}
+library(gclus)
+library(ggplot2)
+library(dplyr)
+
+data(wine)
+scaled_wine <- scale(wine) %>% as.data.frame()
+scaled_wine2 <- scaled_wine[-1]
+```
+
+```{r kboot, results='hide', message=FALSE, warning=FALSE}
+
+library(fpc)
+
+set.seed(20)
+km.boot2 <- clusterboot(scaled_wine2, B=100, bootmethod="boot",
+                        clustermethod=kmeansCBI,
+                        krange=2, seed=20)
+
+km.boot3 <- clusterboot(scaled_wine2, B=100, bootmethod="boot",
+                        clustermethod=kmeansCBI,
+                        krange=3, seed=20)
+
+km.boot4 <- clusterboot(scaled_wine2, B=100, bootmethod="boot",
+                        clustermethod=kmeansCBI,
+                        krange=4, seed=20)
+
+
+km.boot15 <- clusterboot(scaled_wine2, B=100, bootmethod="boot",
+                        clustermethod=kmeansCBI,krange=15, seed=20)
+```
+
+
+```{r cboost_results, include=TRUE}
+print(km.boot2)
+print(km.boot3)
+print(km.boot4)
+print(km.boot15)
+```
+
+
+### Multivariate validation of cluster results (clValid package)
