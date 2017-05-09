@@ -1,6 +1,8 @@
 ---
 title: "2017-05-10-evaluating-clusters-in-unsupervised-learning"
-output: html_document
+output: 
+  md_document:
+    variant: markdown_github
 ---
 
 ```{r setup, include=FALSE}

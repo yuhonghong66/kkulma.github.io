@@ -4,10 +4,10 @@ title: About me
 subtitle: ""
 ---
 
-Overall, enthusiastic data (and science!) enthusiast.
+Overall, enthusiastic science enthusiast.
 
 Formally, doctor in evolutionary biology.
 
-Professionally, data analyst/scientist.
+Professionally, data scientist.
 
 Privately, soppy mum and outdoors lover.
