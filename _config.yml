@@ -25,9 +25,11 @@ description: Data fun and exploration
 navbar-links:
   About Me: "aboutme"
   About This Blog: "aboutblog"
-  My Other Blogs:
-    - Nauka Rzecz Ludzka [PL]: "http://katarzynakulma.blogspot.co.uk/"
-    - scienceprone: "https://scienceprone.wordpress.com/"
+  Blogroll:
+    - R-bloggers: "https://www.r-bloggers.com/"
+    - Maëlle Not a fish: "http://www.masalmon.eu/"
+    - Shirin's playgRound: "https://shiring.github.io/"
+    
 #    - GitHub Pages: "https://pages.github.com/"
 #  Author's home: "http://deanattali.com"
 
