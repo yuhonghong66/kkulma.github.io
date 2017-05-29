@@ -1,5 +1,3 @@
-### ANIMATED PLOTS AS PART OF EXPLORATORY ANALYSIS
-
 The internet seems to be booming with blog posts on animated graphs, whether it's for more serious purposes or not so much. I didn't think anything more of it than just a gimmick or a cool way of spicing up your conference talk. However, I'm a total convert now and **in this post I want to show a real value that such graph can add to your (absolutely serious!) exploratory analysis.**
 
 <br>
