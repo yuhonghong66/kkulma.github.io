@@ -1,5 +1,5 @@
 ---
-title: "animated_london_crimes"
+title: "Animated graphs as part of Exploratory Data Analysis "
 output: 
   md_document:
     variant: markdown_github

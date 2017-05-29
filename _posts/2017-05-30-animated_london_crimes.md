@@ -2,7 +2,7 @@ The internet seems to be booming with blog posts on animated graphs, whether it'
 
 <br>
 
-### IMPORT OF METROPOLITAM POLICE DATA
+### IMPORT OF METROPOLITAN POLICE DATA
 
 As an example, I'll use geospatial data about crime and policing in the UK, freely available [here](https://data.police.uk/data/). As I live in London, quite naturally I chose data for **Metropolitan Police** region, starting from **January 2016 to March 2017, with only *Include crime data* option ticked.**.
 
@@ -111,8 +111,6 @@ library(evaluate)
 
 evaluate("london_map = get_map(location = 'London', maptype='toner',  zoom = 10)")
 ```
-
-
 ``` r
 ggmap(london_map)
 ```
