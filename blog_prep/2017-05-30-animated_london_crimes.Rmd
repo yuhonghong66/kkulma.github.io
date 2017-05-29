@@ -1,0 +1,105 @@
+---
+title: "animated_london_crimes"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+knitr::opts_knit$set(root.dir = "/Users/katarzynakulma/projects/animated_maps/")
+```
+
+### ANIMATED PLOTS AS PART OF EXPLORATORY ANALYSIS 
+
+The internet seems to be booming with blog posts on animated graphs, whether it's for more serious purposes or not so much. I didn't think anything more of it than just a gimmick or a cool way of spicing up your conference talk. However, I'm a total convert now and **in this post I want to show a real value that such graph can contribute to your (absolutely serious!) exploratory analysis.**
+
+<br>
+
+### IMPORT OF METROPOLITAM POLICE DATA 
+
+As an example, I'll use geospatial data about crime and policing in the UK, freely available [here](https://data.police.uk/data/). As I live in London, quite naturally I chose data for **Metropolitan Police** region, starting from **January 2016 to March 2017, with only _Include crime data_ option ticked.**. 
+
+The data are downloaded in the form of list of folders, each containing data for any specified month. In order to smoothly find and append those files, I used `dir()` function (after moving the folders to the working directory first, bien sûr):
+
+```{r data import, include=TRUE}
+london_files <- dir(recursive = T, pattern = "*metropolitan-street.csv", full.names=TRUE)
+london_files
+```
+
+This function recognizes all the specified files (here: csv files ending with *metropolitan-street* string) in the main folder, as well as sub-folders, genius! As you can see, thanks to `full.names = TRUE`, the object will return not only files' names, but also their paths.
+
+Next, I only need to append identified files...
+```{r data append, include=TRUE}
+london_police_data <- do.call(rbind,lapply(london_files, read.csv))
+str(london_police_data) 
+```
+... and we can now start!
+
+#### CREATING A STATIC VIEW HEATMAP
+
+Let's have a look at crime types and their frequencies:
+
+```{r crime_table, include=TRUE}
+sort(table(london_police_data$Crime.type))
+```
+
+It looks like _Possession of weapons_ is, thankfully, the least common reported crime, so let's explore where those crimes usually happen and if there's any obvious seasonality. I'll start with creating a separate dataframe: 
+
+```{r weapon_data, include = TRUE}
+library(dplyr)
+
+weapon_map_data <- london_police_data %>%
+  filter(Crime.type == "Possession of weapons") %>% 
+  select(Month, Longitude, Latitude, Crime.type)
+```
+
+Next, I'll create a plain map of London using `ggmap` package:
+
+```{r london_map, include = TRUE}
+#install.packages("ggmap", type = "source")
+#devtools::install_github("hadley/ggplot2")
+library(ggmap)
+library(ggplot2)
+
+london_map = get_map(location = "London", maptype="toner",  zoom = 10)
+
+ggmap(london_map)
+```
+
+Not bad for two lines of code, ey!
+
+_(Note commented part with package installation: I had to install `ggmap` and `ggplot2` packages this way, otherwise the maps presented here would't get generated)_
+
+Finally, here's a **static** heat map of weapon possession crimes in London, between January 2016 and March 2017:
+
+```{r weapon_static, include=TRUE}
+weapon_london_heat_map<- ggmap(london_map, extent = "device") +
+  stat_density_2d(aes(x = Longitude, y = Latitude, fill = ..level.., alpha=1),
+                  data=weapon_map_data, geom = "polygon") +
+  scale_fill_gradient(low = "blue", high = "red") +
+  scale_alpha(range = c(0.00, 0.5), guide = FALSE) 
+
+weapon_london_heat_map
+```
+
+Not bad at all! We can now identify the crime hotspots, but there's no way we can infer anything about the crime seasonality. And here's where the first serious use of animated graphs comes in!
+
+<br>
+
+### CREATING ANIMATED SINGLE VIEW HEAT MAP
+
+For this purpose I use, now famous, `gganimate` package. If you ever throught that creating gif's with changing plots is hard, you'd better start eyeballing the below code, because the only difference between the static and animated graph is only `frame = Month` part added to graph's `aes()`. Simples. 
+
+```{r animated_weapons, include=TRUE}
+#devtools::install_github("dgrtwo/gganimate")
+library(gganimate)
+
+map_anime<- ggmap(london_map, extent = "device") +
+  stat_density_2d(aes(x = Longitude, y = Latitude, frame = Month, 
+                      fill = ..level.., alpha=1),
+                  data=weapon_map_data, geom = "polygon") +
+  scale_fill_gradient(low = "blue", high = "red") +
+  scale_alpha(range = c(0.00, 0.5), guide = FALSE) 
+
+gganimate(map_anime)
+```
+
