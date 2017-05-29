@@ -1,6 +1,8 @@
 ---
 title: "animated_london_crimes"
-output: html_document
+output: 
+  md_document:
+    variant: markdown_github
 ---
 
 ```{r setup, include=FALSE}
@@ -65,8 +67,9 @@ Next, I'll create a plain map of London using `ggmap` package:
 #devtools::install_github("hadley/ggplot2")
 library(ggmap)
 library(ggplot2)
+library(evaluate)
 
-london_map = get_map(location = "London", maptype="toner",  zoom = 10)
+evaluate("london_map = get_map(location = 'London', maptype='toner',  zoom = 10)")
 
 ggmap(london_map)
 ```
