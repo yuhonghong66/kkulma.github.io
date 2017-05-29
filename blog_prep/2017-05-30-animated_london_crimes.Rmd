@@ -10,7 +10,7 @@ knitr::opts_knit$set(root.dir = "/Users/katarzynakulma/projects/animated_maps/")
 
 ### ANIMATED PLOTS AS PART OF EXPLORATORY ANALYSIS 
 
-The internet seems to be booming with blog posts on animated graphs, whether it's for more serious purposes or not so much. I didn't think anything more of it than just a gimmick or a cool way of spicing up your conference talk. However, I'm a total convert now and **in this post I want to show a real value that such graph can contribute to your (absolutely serious!) exploratory analysis.**
+The internet seems to be booming with blog posts on animated graphs, whether it's for more serious purposes or not so much. I didn't think anything more of it than just a gimmick or a cool way of spicing up your conference talk. However, I'm a total convert now and **in this post I want to show a real value that such graph can add to your (absolutely serious!) exploratory analysis.**
 
 <br>
 
@@ -44,19 +44,23 @@ sort(table(london_police_data$Crime.type))
 
 It looks like _Possession of weapons_ is, thankfully, the least common reported crime, so let's explore where those crimes usually happen and if there's any obvious seasonality. I'll start with creating a separate dataframe: 
 
-```{r weapon_data, include = TRUE, message=FALSE, error=FALSE, comment=FALSE}
+```{r weapon_data, include = TRUE, message=FALSE, error=FALSE, comment=FALSE, warning=FALSE}
 library(dplyr)
 
 weapon_map_data <- london_police_data %>%
   filter(Crime.type == "Possession of weapons") %>% 
   select(Month, Longitude, Latitude, Crime.type)
+```
 
+And a quick peek into sample sizes...
+
+```{r weapon_sample, include=TRUE}
 table(weapon_map_data$Month)
 ```
 
 Next, I'll create a plain map of London using `ggmap` package:
 
-```{r london_map, include = TRUE, message=FALSE, error=FALSE, comment=FALSE}
+```{r london_map, include = TRUE, message=FALSE, error=FALSE, comment=FALSE, warning=FALSE}
 #install.packages("ggmap", type = "source")
 #devtools::install_github("hadley/ggplot2")
 library(ggmap)
@@ -69,11 +73,11 @@ ggmap(london_map)
 
 Not bad for two lines of code, ey!
 
-_(Note commented part with package installation: I had to install `ggmap` and `ggplot2` packages this way, otherwise the maps presented here would't get generated)_
+_(Note commented part with package installation: I had to install `ggmap` and `ggplot2` packages this way, otherwise the maps presented here wouldn't get generated)_
 
 Finally, here's a **static** heat map of weapon possession crimes in London, between January 2016 and March 2017:
 
-```{r weapon_static, include=TRUE, message=FALSE, error=FALSE, comment=FALSE}
+```{r weapon_static, include=TRUE, message=FALSE, error=FALSE, comment=FALSE, warning=FALSE}
 weapon_london_heat_map<- ggmap(london_map, extent = "device") +
   stat_density_2d(aes(x = Longitude, y = Latitude, fill = ..level.., alpha=1),
                   data=weapon_map_data, geom = "polygon") +
@@ -89,7 +93,7 @@ Not bad at all! We can now identify the crime hotspots, but there's no way we ca
 
 ### CREATING ANIMATED SINGLE-VIEW HEAT MAP
 
-For this purpose I use, now famous, `gganimate` package. If you ever throught that creating gif's with changing plots is hard, you'd better start eyeballing the below code, because the only difference between the static and animated graph is only `frame = Month` part added to graph's `aes()`. Simples. 
+For this purpose I use, now famous, `gganimate` package. If you ever thought that creating gif's with changing plots is hard, you'd better start eyeballing the below code, because the only difference between the static and animated graph is `frame = Month` part added to graph's `aes()`. Simples. 
 
 ```{r animated_weapons, include=TRUE}
 #devtools::install_github("dgrtwo/gganimate")
@@ -105,15 +109,14 @@ map_anime<- ggmap(london_map, extent = "device") +
 gganimate(map_anime)
 ```
 
-From this animation alone (pretty much) you would know which of the following statements is true:  i) weapon-carrying criminals like Easter and summer holidays, thus take time off from their criminal activity during these times, OR ii) during holidays periods the weapon-carrying criminals tend to 'focus' on more central areas while keeping up their criminal activity.
-
+From this animation alone (pretty much) you would know which of the following statements is true:  i) weapon-carrying criminals like Easter and summer holidays, thus take time off from their criminal activity during these times and thus reducing the geographical range of such crimes, OR ii) during holiday periods the weapon-carrying criminals tend to 'focus' on more central areas, supposedly while keeping up with their criminal activity...?
 
 
 #### CREATING ANIMATED MULTIPLE-VIEW HEAT MAP
 
-Following the same logic, we can create a faceted-animted view of all crimes in London over 15 months. It goes like this:
+Following the same logic, we can create a faceted-animated view of all crimes in London over 15 months. It goes like this:
 
-```{r all_crimes, include=TRUE, message=FALSE, comment=FALSE, error=FALSE}
+```{r all_crimes, include=TRUE, message=FALSE, comment=FALSE, error=FALSE, warning=FALSE}
 
 # creating a new data.frame
 all_map_data <- london_police_data %>% 
@@ -131,9 +134,6 @@ all_london_heat_map<- ggmap(london_map, extent = "device") +
 gganimate(all_london_heat_map)
 ```
 
-So, there you go! At the first glance it may look a bit chaotic, but such visualization will quickly make you realise that some crimes always have a narrow geographical range (X or Y, for example), compared to some with universally wide range (e.g. Z). And this is the first step for generating new questions and hypotheses, the integral part of any exploratory analysis!
+So, there you go! At the first glance it may look a bit chaotic, but such visualization will quickly make you realise that some crimes always have a narrow geographical range ( _Theft from the person_ or _Other theft_, for example), especially compared to some with universally wide range (e.g. _Burglary_ or _Criminal damage and arson_). And this is the first step for generating new questions and hypotheses, the integral (and very desirable) part of any exploratory analysis!
 
 So, what do you think? Are you converted yet? :)
-
----------------------------------------------------
-A
