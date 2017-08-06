@@ -1,0 +1,252 @@
+---
+title: 'Friendships among top #rstats Twitterers'
+output: html_document
+---
+
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+Have you ever wondered whether the most active/popular R-twitterers are virtual friends? :) And by friends here I simply mean mutual followers on Twitter. In this post, I score and pick top 30 #rstats twitter users and analyse their Twitter friends' network. You'll see a lot of applications of `rtweet` and `ggraph` packages, as well as a very useful twist using `purrr` library, so let's begin!
+
+
+```{r twitter_setup, include=FALSE, message=FALSE, error=FALSE, warning=FALSE, echo = FALSE}
+library(twitteR)
+
+load("twitter_image.RData")
+
+
+api_key <- "9aMsBdeRf16FR0F14JHX8ySfE"
+api_secret <- "IED6n8nnBnxfa5rZoKn6ZCXdy2w2ARNDfY8a3Ry0GXhAwOJByd"
+access_token <- "567537377-hMRh7424BRezcuu03bgsVAqYlqsHbsI8QtRVkGQF"
+access_token_secret <- "na3LB2iWhZuxPGDtaukkRFoatYiJPJIk0PRTdgaxiBBAB"
+
+setup_twitter_oauth(api_key,api_secret)
+```
+
+### IMPORTING #RSTAST USERS 
+
+After loading my packages...
+
+
+```{r libraries, , message=FALSE, error=FALSE, warning=FALSE}
+library(rtweet)
+library(dplyr)
+library(purrr)
+library(igraph)
+library(ggraph)
+library(DT)
+```
+
+... I searched for Twitter users that have `#rstats` in their profile description. It definitely doesn't include ALL active and popular R users, but it's a pretty reliable way of picking definite R - fans
+
+```{r getting_users, include=TRUE, message=FALSE, error=FALSE, warning=FALSE, eval=FALSE}
+r_users <- search_users("#rstats", n = 1000)
+```
+
+It's importand to say, that even though I wanted to extract 1000 users, I ended up with quite a few duplicates and the actual number of users I got was much smaller: 565
+
+```{r used_users}
+r_users %>% summarise(n_users = n_distinct(screen_name))
+```
+
+Funnily enough, even though my profile description contains `#rstats`, I was not included in the search results (@KKulma), sic! Were you? :)
+
+
+```{r sorted_users, include = TRUE, message=FALSE, error=FALSE, warning=FALSE}
+ r_users %>% select(screen_name) %>% arrange(screen_name) %>% DT::datatable()
+```
+
+
+
+#### SCORING AND CHOOSING TOP #RSTATS USERS 
+
+```{r info_about_users, include = TRUE, message=FALSE, error=FALSE, warning=FALSE, eval = FALSE}
+r_users_info <- lookup_users(r_users$screen_name)
+```
+
+```{r activity_vars, include = TRUE, message=FALSE, error=FALSE, warning=FALSE}
+r_users_info %>% select(dplyr::contains("count")) %>% head() %>% DT::datatable()
+```
+
+
+```{r creating_scores, include = TRUE, message=FALSE, error=FALSE, warning=FALSE}
+r_users_ranking <- r_users_info %>%
+  filter(protected == FALSE) %>% 
+  select(screen_name, dplyr::contains("count")) %>% 
+  unique() %>% 
+  mutate(followers_percentile = ecdf(followers_count)(followers_count),
+         friends_percentile = ecdf(friends_count)(friends_count),
+         listed_percentile = ecdf(listed_count)(listed_count),
+         favourites_percentile = ecdf(favourites_count)(favourites_count),
+         statuses_percentile = ecdf(statuses_count)(statuses_count)
+         ) %>% 
+  group_by(screen_name) %>% 
+  summarise(top_score = followers_percentile + friends_percentile + listed_percentile + favourites_percentile + statuses_percentile) %>% 
+  ungroup() %>% 
+  mutate(ranking = rank(-top_score))
+```
+
+
+```{r top_30, include = TRUE, message=FALSE, error=FALSE, warning=FALSE}
+top_30 <- r_users_ranking %>% arrange(desc(top_score)) %>% head(30) %>% arrange(desc(top_score))
+top_30 %>% DT::datatable()
+```
+
+
+
+```{r top30_gender, include = TRUE, message=FALSE, error=FALSE, warning=FALSE}
+
+top30_lookup <- r_users_info %>%
+  filter(screen_name %in% top_30$screen_name) %>% 
+  select(screen_name, user_id)
+
+top30_lookup$gender <- c("M", "F", "F", "F", "F",
+                         "M", "M", "M", "F", "F", 
+                         "F", "M", "M", "M", "F", 
+                         "F", "M", "M", "M", "M", 
+                         "M", "M", "M", "F", "M",
+                         "M", "M", "M", "M", "M")
+
+table(top30_lookup$gender)
+
+```
+
+#### GETTING FRIENDS NETWORK
+
+
+```{r top_friends1, include=TRUE, message=FALSE, error=FALSE, warning=FALSE, eval = FALSE}
+top_30_usernames <- top30_lookup$screen_name
+
+friends_top30a <-   map(top_30_usernames[1:15 ], get_friends)
+names(friends_top30a) <- top_30_usernames[1:15]
+
+# 15 minutes later....
+friends_top30b <- map(top_30_usernames[16:30], get_friends)
+
+```
+
+```{r topfriends_str}
+str(friends_top30a)
+```
+
+
+
+
+
+
+
+
+
+
+
+```{r putting_lists_together, include = TRUE, message=FALSE, error=FALSE, warning=FALSE}
+# turning lists into data frames and putting them together
+friends_top30 <- append(friends_top30a, friends_top30b)
+names(friends_top30) <- top_30_usernames
+
+friends_top <- map2_df(friends_top30, names(friends_top30), ~ mutate(.x, twitter_top_user = .y)) %>% 
+  rename(friend_id = user_id) %>% select(twitter_top_user, friend_id)
+
+# are we missing any users?
+friends_top %>% summarize(dist = n_distinct(twitter_top_user))
+```
+
+
+
+```{r SJ_friends, include=TRUE, message=FALSE, error=FALSE, warning=FALSE, eval = FALSE}
+SJ_friends <- get_followers("TheSmartJokes") %>% 
+  rename(friend_id = user_id) %>% 
+  mutate(twitter_top_user = "TheSmartJokes") %>% 
+  select(twitter_top_user, friend_id)
+```
+
+
+```{r SJ_str}
+str(SJ_friends) 
+```
+
+
+```{r replacing SJ_friends, include=TRUE, message=FALSE, error=FALSE, warning=FALSE}
+friends_top30 <- friends_top %>% 
+  filter(twitter_top_user != "TheSmartJokes") %>% 
+  rbind(SJ_friends) 
+```
+
+
+
+
+
+```{r final_top30m, include = TRUE, message=FALSE, error=FALSE, warning=FALSE}
+# select friends that are top30 users
+final_friends_top30 <- friends_top  %>% 
+  filter(friend_id %in% top30_lookup$user_id)
+
+# add friends' screen_name
+final_friends_top30$friend_name <- top30_lookup$screen_name[match(final_friends_top30$friend_id, top30_lookup$user_id)]
+
+# add users' and friends' gender
+final_friends_top30$user_gender <- top30_lookup$gender[match(final_friends_top30$twitter_top_user, top30_lookup$screen_name)]
+final_friends_top30$friend_gender <- top30_lookup$gender[match(final_friends_top30$friend_name, top30_lookup$screen_name)]
+
+## final product!!!
+final <- final_friends_top30 %>% select(-friend_id)
+
+head(final) %>% DT::datatable()
+```
+
+
+#### VISUALIZATING FRIENDS NETWORKS
+
+
+```{r graph1, include=TRUE, message=FALSE, error=FALSE, warning=FALSE}
+
+f1 <- graph_from_data_frame(final, directed = TRUE, vertices = NULL)
+V(f1)$Popularity <- degree(f1, mode = 'in')
+```
+
+
+
+
+```{r user_gender, include = TRUE}
+ggraph(f1, layout='kk') + 
+  geom_edge_fan(aes(alpha = ..index..), show.legend = FALSE) +
+  geom_node_point(aes(size = Popularity)) +
+  theme_graph( fg_text_colour = 'black') +
+  facet_edges(~user_gender)
+
+```
+
+
+```{r friend_gender, include = TRUE}
+ggraph(f1, layout='kk') + 
+  geom_edge_fan(aes(alpha = ..index..), show.legend = FALSE) +
+  geom_node_point(aes(size = Popularity)) +
+  theme_graph( fg_text_colour = 'black') +
+  facet_edges(~friend_gender)
+
+```
+
+```{r pure_graph, include = TRUE}
+ggraph(f1, layout='kk') + 
+  geom_edge_fan(aes(alpha = ..index..), show.legend = FALSE) +
+  geom_node_point(aes(size = Popularity)) +
+  theme_graph( fg_text_colour = 'black') 
+
+```
+
+
+```{r names_graph, include = TRUE}
+ggraph(f1, layout='kk') + 
+  geom_edge_fan(aes(alpha = ..index..), show.legend = FALSE) +
+  geom_node_point(aes(size = Popularity)) +
+  geom_node_text(aes(label = name, fontface='bold'), 
+                 color = 'white', size = 3) +
+  theme_graph(background = 'dimgray', text_colour = 'white',title_size = 30) 
+```
+
+
+### TAKE HOME MESSAGE 
+
+After weeks and months (!!!) of not publishing anything, finally this post sees the light of day! It went through so many tests and changes - mainly conceptual ones! - that I'm relieved now that it's out and I can move on to another project. But I learned my lesson and next time I'm not going to take that long to push something out - Imperfect projects can improve and refine once they're out and I suppose they engage more people by provoking them to give ideas and suggest better solutions. So, no more breaks like that, please! :)
