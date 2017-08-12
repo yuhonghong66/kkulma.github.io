@@ -10,6 +10,17 @@ knitr::opts_chunk$set(echo = TRUE)
 Have you ever wondered whether the most active/popular R-twitterers are virtual friends? :) And by friends here I simply mean mutual followers on Twitter. In this post, I score and pick top 30 #rstats twitter users and analyse their Twitter friends' network. You'll see a lot of applications of `rtweet` and `ggraph` packages, as well as a very useful twist using `purrr` library, so let's begin!
 
 
+
+### BEFORE I START: OFF - TOPIC ON PERFECTIONISM
+
+After weeks and months (!!!) of not publishing anything, finally this post sees the light of day! It went through so many tests and changes - including conceptual ones! - that I'm relieved now that it's out and I can move on to another project. But I learned my lesson: perfectionism can be a real hurdle for any developer/data scientist and clearly, [I'm not alone with this experience](https://getpocket.com/a/read/1845363129). So, next time I'm not going to take that long to push something out - imperfect projects can improve and refine once they're out and I suppose they engage more people by provoking them to give ideas and suggest better solutions. Anyway, where were we...? :)
+
+
+
+### IMPORTING #RSTAST USERS 
+
+After loading my precious packages...
+
 ```{r twitter_setup, include=FALSE, message=FALSE, error=FALSE, warning=FALSE, echo = FALSE}
 library(twitteR)
 
@@ -24,9 +35,6 @@ access_token_secret <- "na3LB2iWhZuxPGDtaukkRFoatYiJPJIk0PRTdgaxiBBAB"
 setup_twitter_oauth(api_key,api_secret)
 ```
 
-### IMPORTING #RSTAST USERS 
-
-After loading my precious packages...
 
 
 ```{r libraries, , message=FALSE, error=FALSE, warning=FALSE}
@@ -213,6 +221,7 @@ head(final) %>% DT::datatable()
 
 #### VISUALIZATING FRIENDS NETWORKS
 
+After turning our data frame into something more usable by `igraph` and `ggraph`...
 
 ```{r graph1, include=TRUE, message=FALSE, error=FALSE, warning=FALSE}
 
@@ -220,6 +229,8 @@ f1 <- graph_from_data_frame(final, directed = TRUE, vertices = NULL)
 V(f1)$Popularity <- degree(f1, mode = 'in')
 ```
 
+
+... let's have a quick overview of all the connections:
 
 ```{r pure_graph, include = TRUE}
 ggraph(f1, layout='kk') + 
@@ -229,6 +240,7 @@ ggraph(f1, layout='kk') +
 
 ```
 
+Keep in mind that `Popularity` -  defined as the number of edges that go **into** the node - determines node size. It's all pretty, but I'd like to see how nodes correspond to Twitter users' names:
 
 ```{r names_graph, include = TRUE}
 ggraph(f1, layout='kk') + 
@@ -239,37 +251,45 @@ ggraph(f1, layout='kk') +
   theme_graph(background = 'dimgray', text_colour = 'white',title_size = 30) 
 ```
 
-
-
-
-
-
-
-
+So interesting! You see the core of the graph consisting of mainly female users: @hpster, @JennyBryan, @juliasilge, @karawoo, but also a couple of male R - users: @hrbrmstr and @noamross. Who do they follow? Men or women?
 
 ```{r user_gender, include = TRUE}
 ggraph(f1, layout='kk') + 
   geom_edge_fan(aes(alpha = ..index..), show.legend = FALSE) +
   geom_node_point(aes(size = Popularity)) +
   theme_graph( fg_text_colour = 'black') +
-  facet_edges(~user_gender) +
-  labs(title='Top 30 #rstats users and their gender')
+  geom_edge_link(aes(colour = friend_gender)) +
+  scale_edge_color_brewer(palette = 'Set1') + 
+  labs(title='Top 30 #rstats users and gender of their friends')
 
 ```
 
 
-```{r friend_gender, include = TRUE}
+It's difficult to say definitely, but superficially I see A LOT of red, suggesting that our top R - users often follow female top twitterers. Let's have a closer look and split graphs by user gender and see if there's any difference in the gender of users they follow:
+
+
+```{r user_gender2, include = TRUE}
 ggraph(f1, layout='kk') + 
   geom_edge_fan(aes(alpha = ..index..), show.legend = FALSE) +
   geom_node_point(aes(size = Popularity)) +
   theme_graph( fg_text_colour = 'black') +
-  facet_edges(~friend_gender) +
-  labs(title='Top 30 #rstats users and their friends gender')
+  facet_edges(~user_gender) +
+  geom_edge_link(aes(colour = friend_gender)) +
+  scale_edge_color_brewer(palette = 'Set1') +
+  labs(title='Top 30 #rstats users and gender of their friends', subtitle='Graphs are separated by top user gender, edge colour indicates their friend gender' )
+  
+```
+
+Ha! look at this! Obviously, Female users' graph will be less dense as there are fewer of them in the dataset, however, you can see that they tend to follow male users more often than male top users do. Is that impression supported by raw numbers?
+
+```{r gender_test}
+final %>% 
+  group_by(user_gender, friend_gender) %>% 
+  summarize(n = n()) %>% 
+  group_by(user_gender) %>% 
+  mutate(sum = sum(n),
+         percent = round(n/sum, 2)) 
 
 ```
 
-
-
-### TAKE HOME MESSAGE 
-
-After weeks and months (!!!) of not publishing anything, finally this post sees the light of day! It went through so many tests and changes - including conceptual ones! - that I'm relieved now that it's out and I can move on to another project. But I learned my lesson: perfectionism can be a real hurdle for any developer/data scientist and clearly, [I'm not alone with this experience](https://getpocket.com/a/read/1845363129). So, next time I'm not going to take that long to push something out - imperfect projects can improve and refine once they're out and I suppose they engage more people by provoking them to give ideas and suggest better solutions. 
+It looks so, although to the lesser extend than suggested by the network graphs: Female top users follower other female top users 46% of time, whereas male top users follow female top user 54% of time. So what do you have to say about that?
