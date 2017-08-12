@@ -22,7 +22,7 @@ library(ggraph)
 r_users <- search_users("#rstats", n = 1000)
 ```
 
-It's important to say, that in `rtweet::search_users()` even if you specify 1000 users to be extracted, I ended up with quite a few duplicates and the actual number of users I got was much smaller: 565
+It's important to say, that in `rtweet::search_users()` even if you specify 1000 users to be extracted, I ended up with quite a few duplicates and the actual number of users I got was much smaller: 564
 
 ``` r
 r_users %>% summarise(n_users = n_distinct(screen_name))
