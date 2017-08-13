@@ -1,8 +1,10 @@
-Have you ever wondered whether the most active/popular R-twitterers are virtual friends? :) And by friends here I simply mean mutual followers on Twitter. In this post, I score and pick top 30 \#rstats twitter users and analyse their Twitter friends' network. You'll see a lot of applications of `rtweet` and `ggraph` packages, as well as a very useful twist using `purrr` library, so let's begin!
+Have you ever wondered whether the most active/popular R-twitterers are virtual friends? :) And by friends here I simply mean mutual followers on Twitter. In this post, I score and pick top 30 \#rstats twitter users and analyse their Twitter network. You'll see a lot of applications of `rtweet` and `ggraph` packages, as well as a very useful twist using `purrr` library, so let's begin!
 
 ### BEFORE I START: OFF - TOPIC ON PERFECTIONISM
 
-After weeks and months (!!!) of not publishing anything, finally this post sees the light of day! It went through so many tests and changes - including conceptual ones! - that I'm relieved now that it's out and I can move on to another project. But I learned my lesson: perfectionism can be a real hurdle for any developer/data scientist and clearly, [I'm not alone with this experience](https://getpocket.com/a/read/1845363129). So, next time I'm not going to take that long to push something out - imperfect projects can improve and refine once they're out and I suppose they engage more people by provoking them to give ideas and suggest better solutions. Anyway, where were we...? :)
+After weeks and months (!!!) of not publishing anything, finally this post sees the light of day! It went through so many tests and changes - including conceptual ones - that I'm relieved now that it's out and I can move on to another project. But I learned my lesson: perfectionism can be a real hurdle on the way of being a productive developer/data scientist and clearly, [I'm not alone with this experience](https://getpocket.com/a/read/1845363129). So, next time I'll publish something sooner - imperfect projects can improve and refine once they're out. Also,they can engage more people by provoking them to give ideas and suggest better solutions. 
+
+Anyway, where were we...? :)
 
 ### IMPORTING \#RSTATS USERS
 
@@ -16,13 +18,13 @@ library(igraph)
 library(ggraph)
 ```
 
-... I searched for Twitter users that have `rstats` in their profile description. It definitely doesn't include ALL active and popular R - users, but it's a pretty reliable way of picking definite R - fans.
+... I searched for Twitter users that have `rstats` termin their profile description. It definitely doesn't include ALL active and popular R - users, but it's a pretty reliable way of picking R - fans.
 
 ``` r
 r_users <- search_users("#rstats", n = 1000)
 ```
 
-It's important to say, that in `rtweet::search_users()` even if you specify 1000 users to be extracted, I ended up with quite a few duplicates and the actual number of users I got was much smaller: 564
+It's important to say, that in `rtweet::search_users()` even if you specify 1000 users to be extracted, you end up with quite a few duplicates and the actual number of users I got was much smaller: 564
 
 ``` r
 r_users %>% summarise(n_users = n_distinct(screen_name))
@@ -602,6 +604,9 @@ Funnily enough, even though my profile description contains `#rstats`, I was not
     ## 562   Zofiathewitch
     ## 563    ZoltanSzuhai
     ## 564         zu_gabe
+    
+
+(Excuse a monster - list, but originally I used DT::datatable for it, but had to drop it as it's not supported in markdown files).
 
 #### SCORING AND CHOOSING TOP \#RSTATS USERS
 
@@ -611,7 +616,7 @@ Now, let's extract some useful information about those users:
 r_users_info <- lookup_users(r_users$screen_name)
 ```
 
-You'll notice, that created data frame holds information about number of followers, friends (users they follow), lists they belong to, number of tweets (statuses) or how many times sometimes marked those tweets as their favourite.
+You'll notice, that created data frame holds information about number of followers, friends (users they follow), lists they belong to, number of tweets (statuses) or how many times were they marked favourite.
 
 ``` r
 r_users_info %>% select(dplyr::contains("count")) %>% head()
@@ -632,7 +637,7 @@ r_users_info %>% select(dplyr::contains("count")) %>% head()
     ## 5          22194
     ## 6          10010
 
-And these variables I use for building my 'top score': I simply calculate a percentile for each of those variables and sum it altogether. Given that each variable's percentile will give me a value between 0 and 1, The final score can have a maximum value of 5.
+And these variables that I used for building my 'top score': I simply calculate a percentile for each of those variables and sum it altogether for each user. Given that each variable's percentile will give me a value between 0 and 1, The final score can have a maximum value of 5.
 
 ``` r
 r_users_ranking <- r_users_info %>%
@@ -651,7 +656,7 @@ r_users_ranking <- r_users_info %>%
   mutate(ranking = rank(-top_score))
 ```
 
-All I need to do now is to pick top 30 users based on the score I calculated. Did you manage get onto the top 30 list? :)
+Finally, I picked top 30 users based on the score I calculated. Tada!
 
 ``` r
 top_30 <- r_users_ranking %>% arrange(desc(top_score)) %>% head(30) %>% arrange(desc(top_score))
@@ -673,9 +678,9 @@ top_30
     ## 10       Cataranea  4.602496      10
     ## # ... with 20 more rows
 
-I must say I'm incredibly impressed by these scores: @hpster, THE top R - twitterer managed to obtain a score of over 4.8 out of 5! Also, @Physical\_Prep and @TheSmartJokes managed to tie 8th place, which I thought was unlikely to happed, given how granular the score is.
+I must say I'm incredibly impressed by these scores: @hpster, THE top R - twitterer managed to obtain a score of nearly 4.9 out of 5! WOW!
 
-Anyway! To add some more depth to my list, I tried to identify those users' gender, to see how many top users are women. I had to do it manually (sic!), as the Twitter API's data doesn't provide this, AFAIK. Let me know if you spot any mistakes!
+Anyway! To add some more depth to my list, I tried to identify top users' gender, to see how many of them are women. I had to do it manually (ekhem!), as the Twitter API's data doesn't provide this, AFAIK. Let me know if you spot any mistakes!
 
 ``` r
 top30_lookup <- r_users_info %>%
@@ -696,11 +701,11 @@ table(top30_lookup$gender)
     ##  F  M 
     ## 10 20
 
-It looks like a third of all top users are womes, but in the top 10 users there are 6 women. Better than I expected, actually. So, well done, ladies!
+It looks like a third of all top users are womes, but in the top 10 users there are 6 women. Better than I expected, to be honest. So, well done, ladies!
 
 #### GETTING FRIENDS NETWORK
 
-Now, this was the trickiest part of this project: extracting top users' friends list and putting it all in one data frame. As you ma be aware, Twitter API has a limit od downloading information on 15 accounts in 15 minutes. So for my list, I had to break it up into 2 steps, 15 users each and then I named each list according to the top user they refer to:
+Now, this was the trickiest part of this project: extracting top users' friends list and putting it all in one data frame. As you ma be aware, Twitter API allows you to download information only on 15 accounts in 15 minutes. So for my list, I had to break it up into 2 steps, 15 users each and then I named each list according to the top user they refer to:
 
 ``` r
 top_30_usernames <- top30_lookup$screen_name
@@ -764,8 +769,11 @@ str(friends_top30b)
     ##  $ PlethodoNick   :'data.frame': 1961 obs. of  1 variable:
     ##   ..$ user_id: chr [1:1961] "42486688" "15576928" "2154127088" "337318821" ...
     ##   ..- attr(*, "next_cursor")= chr "0"
+    
 
-So what I need to do now is i) append the two lists, ii) create a variable stating top users' name in each of those lists and iii) turn lists into data frames. All this can be done in 3 lines of code. And brace yourself: here comes the `purrr` trick I've been going on about! Simply using `purrr:::map2_df` I can take a single list of lists, create a name variable in each of those lists based on the list name (`twitter_top_user`) and convert the result into the data frame. BRILLIANT!!
+(again, excuse a monster list!)
+
+So what I need to do now is i) append the two lists, ii) create a variable stating top users' name in each of those lists and iii) turn lists into data frames. All this can be done in 3 lines of code. And brace yourself: here comes the `purrr` trick I've been going on about! Simply using `purrr:::map2_df` I can take a single list of lists, create a name variable in each of those lists based on the list name (`twitter_top_user`) and convert the result into the data frame. **BRILLIANT!!**
 
 ``` r
 # turning lists into data frames and putting them together
@@ -776,14 +784,9 @@ names(friends_top30) <- top_30_usernames
 friends_top <- map2_df(friends_top30, names(friends_top30), ~ mutate(.x, twitter_top_user = .y)) %>% 
   rename(friend_id = user_id) %>% select(twitter_top_user, friend_id)
 
-# are we missing any users?
-friends_top %>% summarize(dist = n_distinct(twitter_top_user))
 ```
 
-    ##   dist
-    ## 1   30
-
-Here's the last bit that I need to correct before we move to plotting the friends networks: for some reason, using `purrr::map()` with `rtweet:::get_friends()` gives me only 5000 friends, whereas the true value is over 8000. As it's the only top user with more than 5000 friends, I'll download his friends separately...
+Here's the last bit that I need to correct before we move on to plotting the friends networks: for some reason, using `purrr::map()` with `rtweet:::get_friends()` gives me max only 5000 friends, but in case of @TheSmartJokes the true value is over 8000. As it's the only top user with more than 5000 friends, I'll download his friends separately...
 
 ``` r
 # getting a full list of friends
@@ -804,7 +807,7 @@ str(SJ_friends)
     ##  $ twitter_top_user: chr  "TheSmartJokes" "TheSmartJokes" "TheSmartJokes" "TheSmartJokes" ...
     ##  $ friend_id       : chr  "390877754" "6085962" "88540151" "108186743" ...
 
-... and use it to replace those that are already in the final friends list.
+... and use it to replace those friends that are already in the final friends list.
 
 ``` r
 friends_top30 <- friends_top %>% 
@@ -812,7 +815,7 @@ friends_top30 <- friends_top %>%
   rbind(SJ_friends) 
 ```
 
-Some final data cleaning: filtering out friends that are not among the top 30 R - users, replacing their IDs with twitter names and adding gender for top users and their friends... Tam, tam, tam: here we are! Here's the final data frame we'll use for visualising the friends networks!
+Finally, let me do some last data cleaning: filtering out friends that are not among the top 30 R - users, replacing their IDs with twitter names and adding gender for top users and their friends... Tam, tam, tam: here we are! Here's the final data frame we'll use for visualising the friends networks!
 
 ``` r
 # select friends that are top30 users
@@ -860,7 +863,7 @@ ggraph(f1, layout='kk') +
 
 ![generic_pure](/img/2017-08-13-friendships-among-top-r-twitterers_files/figure-markdown_github/pure_graph-1.png)
 
-Keep in mind that `Popularity` - defined as the number of edges that go **into** the node - determines node size. It's all pretty, but I'd like to see how nodes correspond to Twitter users' names:
+Keep in mind that `Popularity` - defined as the number of edges that go **into** the node - determines node size. It's all very pretty, but I'd like to see how nodes correspond to Twitter users' names:
 
 ``` r
 ggraph(f1, layout='kk') + 
@@ -873,7 +876,7 @@ ggraph(f1, layout='kk') +
 
 ![generic_names](/img/2017-08-13-friendships-among-top-r-twitterers_files/figure-markdown_github/names_graph-1.png)
 
-So interesting! You see the core of the graph consisting of mainly female users: @hpster, @JennyBryan, @juliasilge, @karawoo, but also a couple of male R - users: @hrbrmstr and @noamross. Who do they follow? Men or women?
+So interesting! You can see the core of the graph consists mainly of female users: @hpster, @JennyBryan, @juliasilge, @karawoo, but also a couple of male R - users: @hrbrmstr and @noamross. Who do they follow? Men or women?
 
 ``` r
 ggraph(f1, layout='kk') + 
@@ -902,7 +905,7 @@ ggraph(f1, layout='kk') +
 
 ![gender_with_gender](/img/2017-08-13-friendships-among-top-r-twitterers_files/figure-markdown_github/user_gender2-1.png)
 
-Ha! look at this! Obviously, Female users' graph will be less dense as there are fewer of them in the dataset, however, you can see that they tend to follow male users more often than male top users do. Is that impression supported by raw numbers?
+Ha! look at this! Obviously, female users' graph will be less dense as there are fewer of them in the dataset, however, you can see that they tend to follow male users more often than male top users do. Is that impression supported by raw numbers?
 
 ``` r
 final %>% 
@@ -922,4 +925,4 @@ final %>%
     ## 3           M             F    55   101    0.54
     ## 4           M             M    46   101    0.46
 
-It looks so, although to the lesser extend than suggested by the network graphs: Female top users follower other female top users 46% of time, whereas male top users follow female top user 54% of time. So what do you have to say about that?
+It seems so, although to the lesser extend than suggested by the network graphs: Female top users follow other female top users 46% of time, whereas male top users follow female top user 54% of time. So what do you have to say about that?
