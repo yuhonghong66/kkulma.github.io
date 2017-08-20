@@ -26,14 +26,8 @@ After loading my precious packages...
 
 ```{r twitter_setup, include=FALSE, message=FALSE, error=FALSE, warning=FALSE, echo = FALSE}
 library(twitteR)
-
 load("/Users/katarzynakulma/projects/twitter_rstats_community/twitter_image.RData")
-
-
-api_key <- "9aMsBdeRf16FR0F14JHX8ySfE"
-api_secret <- "IED6n8nnBnxfa5rZoKn6ZCXdy2w2ARNDfY8a3Ry0GXhAwOJByd"
-access_token <- "567537377-hMRh7424BRezcuu03bgsVAqYlqsHbsI8QtRVkGQF"
-access_token_secret <- "na3LB2iWhZuxPGDtaukkRFoatYiJPJIk0PRTdgaxiBBAB"
+source("config.R")
 
 setup_twitter_oauth(api_key,api_secret)
 ```
