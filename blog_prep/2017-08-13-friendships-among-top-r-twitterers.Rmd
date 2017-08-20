@@ -1,9 +1,8 @@
 ---
+layout: post
 title: 'Friendships among top R - Twitterers'
-output: 
- md_document:
-    variant: markdown_github
-always_allow_html: yes
+date: 2017-08-13
+htmlwidget: true
 ---
 
 ```{r setup, include=FALSE}
@@ -28,7 +27,7 @@ After loading my precious packages...
 ```{r twitter_setup, include=FALSE, message=FALSE, error=FALSE, warning=FALSE, echo = FALSE}
 library(twitteR)
 
-load("twitter_image.RData")
+load("/Users/katarzynakulma/projects/twitter_rstats_community/twitter_image.RData")
 
 
 api_key <- "9aMsBdeRf16FR0F14JHX8ySfE"
@@ -65,7 +64,7 @@ Funnily enough, even though my profile description contains `#rstats`, I was not
 
 
 ```{r sorted_users, include = TRUE, message=FALSE, error=FALSE, warning=FALSE}
- r_users %>% select(screen_name) %>% unique() %>%  arrange(screen_name) 
+ r_users %>% select(screen_name) %>% unique() %>%  arrange(screen_name)  %>% DT::datatable()
 ```
 
 
@@ -108,7 +107,7 @@ All I need to do now is to pick top 30 users based on the score I calculated. Di
 
 ```{r top_30, include = TRUE, message=FALSE, error=FALSE, warning=FALSE}
 top_30 <- r_users_ranking %>% arrange(desc(top_score)) %>% head(30) %>% arrange(desc(top_score))
-top_30 
+top_30 %>% as.data.frame() %>% select(screen_name) %>% DT::datatable()
 ```
 
 I must say I'm incredibly impressed by these scores: @hpster, THE top R - twitterer managed to obtain a score of over 4.8 out of 5! Also, @Physical_Prep and @TheSmartJokes managed to tie 8th place, which I thought was unlikely to happed, given how granular the score is. 
