@@ -1,6 +1,6 @@
 ---
 layout: post
-title: "Automated and Unmysterious Machine Learning with `h2o.automl()` and LIME"
+title: "Automated and Unmysterious Machine Learning in cancer detection"
 date: 2017-11-07
 ---
 
