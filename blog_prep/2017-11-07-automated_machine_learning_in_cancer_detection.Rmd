@@ -1,6 +1,8 @@
 ---
 title: "Automated and Unmysterious Machine Learning with `h2o.automl()` and LIME"
-output: html_document
+output: 
+  md_document:
+    variant: markdown_github
 ---
 
 ```{r setup, include=FALSE}
@@ -76,8 +78,6 @@ test_h2o  <- h2o.assign(split_h2o[[3]], "test" )  # 15%
 Finally, we can now use the famous `h2o.automl()` function and set the model up: set the target, feature names, training and validation set, as well as how long we want the algorithm to run for (for this you can use either `max_runtime_secs` argument, like I did here, or `max_models`, see [`h2o.automl()` documentation](https://h2o-release.s3.amazonaws.com/h2o/rel-vapnik/1/docs-website/h2o-docs/automl.html) for details. 
 
 ```{r set_model, warning=FALSE, message=FALSE, error=FALSE}
-library(lime)
-
 # Sets target and feature names for h2o
 y <- "class"
 x <- setdiff(names(train_h2o), y)        
@@ -197,7 +197,9 @@ Now, let's prepare `lime` so that it works with H2O model correctly. No one will
 
 
 
-```{r lime_prep, include = FALSE}
+```{r lime_prep, warning=FALSE, message=FALSE, error=FALSE}
+
+library(lime)
 
 # Setup lime::model_type() function for h2o
 model_type.H2OBinomialModel <- function(x, ...) {
