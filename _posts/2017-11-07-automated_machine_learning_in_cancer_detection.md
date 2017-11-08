@@ -1,6 +1,6 @@
 ---
 layout: post
-title: "Automated and Unmysterious Machine Learning in cancer detection"
+title: "Automated and Unmysterious Machine Learning in Cancer Detection"
 date: 2017-11-07
 ---
 
