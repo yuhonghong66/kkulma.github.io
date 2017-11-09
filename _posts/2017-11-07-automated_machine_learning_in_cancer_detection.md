@@ -4,11 +4,11 @@ title: "Automated and Unmysterious Machine Learning in Cancer Detection"
 date: 2017-11-07
 ---
 
-I get bored from doing two things: i) [spot-checking](https://machinelearningmastery.com/why-you-should-be-spot-checking-algorithms-on-your-machine-learning-problems/) + optimising parameters of my predictive models and ii) reading about how 'black box' machine learning (particularly deep learning) models are and how little we can do to better understand how they learn (or not learn, for example when they [take a panda bear as a vulture](https://codewords.recurse.com/issues/five/why-do-neural-networks-think-a-panda-is-a-vulture)!). In this post I'll test a) H2O's function `h2o.automl()` that may help me automate the former and b) [Thomas Lin Pedersen](https://twitter.com/thomasp85)'s `library(lime)` that may help clarify the latter.
+I get bored from doing two things: i) [spot-checking](https://machinelearningmastery.com/why-you-should-be-spot-checking-algorithms-on-your-machine-learning-problems/) + optimising parameters of my predictive models and ii) reading about how 'black box' machine learning (particularly deep learning) models are and how little we can do to better understand how they learn (or not learn, for example when they [take a panda bear for a vulture](https://codewords.recurse.com/issues/five/why-do-neural-networks-think-a-panda-is-a-vulture)!). In this post I'll test a) H2O's function `h2o.automl()` that may help me automate the former and b) [Thomas Lin Pedersen](https://twitter.com/thomasp85)'s `library(lime)` that may help clarify the latter.
 
 ### ACCURATE & AUTOMATED PREDICTIVE MODELS USING `h2o.automl()`
 
-This post would never happen if not for the inspiration I got from two excellent blog posts: [Shirin Glander](https://twitter.com/ShirinGlander)'s [Lime presentation](https://shiring.github.io/machine_learning/2017/04/23/lime) and [Matt Dancho](https://twitter.com/mdancho84) 's [HR data analysis](http://www.business-science.io/business/2017/09/18/hr_employee_attrition.html). There's no hiding that this post is basically copy-catting their work, at least I'm standing on the shoulders of giants, hey!
+This post would never happen if not for the inspiration I got from two excellent blog posts: [Shirin Glander](https://twitter.com/ShirinGlander)'s [Lime presentation](https://shiring.github.io/machine_learning/2017/04/23/lime) and [Matt Dancho](https://twitter.com/mdancho84) 's [HR data analysis](http://www.business-science.io/business/2017/09/18/hr_employee_attrition.html). There's no hiding that this post is basically copy-catting their work - at least I'm standing on the shoulders of giants, hey!
 
 I'll use the powerful `h2o.automl()` function to optimise and choose the most accurate model classifying benign and malignant cancer cells from the Wisconsin dataset.
 
@@ -109,7 +109,7 @@ valid_h2o <- h2o.assign(split_h2o[[2]], "valid" ) # 15%
 test_h2o  <- h2o.assign(split_h2o[[3]], "test" )  # 15%
 ```
 
-Finally, we can now use the famous `h2o.automl()` function and set the model up: set the target, feature names, training and validation set, as well as how long we want the algorithm to run for (for this you can use either `max_runtime_secs` argument, like I did here, or `max_models`, see [`h2o.automl()` documentation](https://h2o-release.s3.amazonaws.com/h2o/rel-vapnik/1/docs-website/h2o-docs/automl.html) for details.
+Finally, we can now use the famous `h2o.automl()` function and set the model up: set the target, feature names, training and validation sets, as well as how long we want the algorithm to run for (for this you can use either `max_runtime_secs` argument, like I did here, or `max_models`, see [`h2o.automl()` documentation](https://h2o-release.s3.amazonaws.com/h2o/rel-vapnik/1/docs-website/h2o-docs/automl.html) for details.
 
 ``` r
 # Sets target and feature names for h2o
@@ -126,7 +126,7 @@ models_h2o <- h2o.automl(
 )
 ```
 
-The algorithm will run random forest (RF), gradient boosting machines (GBM), generalised linear models (GLM) and deep learning (DP) models. It will then produce a leaderboard based on the best stopping metric (which you can choose by defining `stopping_metric` parameter). For more details see [this chapter](https://www.safaribooksonline.com/library/view/practical-machine-learning/9781491964590/ch04.html) from [Practical Machine Learning with H2O by Darren Cook](http://shop.oreilly.com/product/0636920053170.do). You can see the best model by picking up a `@leader`.
+The algorithm will run random forest (RF), gradient boosting machines (GBM), generalised linear models (GLM) and deep learning (DL) models. It will then produce a leaderboard based on the best stopping metric (which you can choose by defining `stopping_metric` parameter). For more details see [this chapter](https://www.safaribooksonline.com/library/view/practical-machine-learning/9781491964590/ch04.html) from [Practical Machine Learning with H2O by Darren Cook](http://shop.oreilly.com/product/0636920053170.do). You can see the best model by picking up a `@leader`.
 
 ``` r
 ### leaderboard
@@ -145,9 +145,9 @@ lb
     ## 
     ## [402 rows x 3 columns]
 
-Neural network wins, followed by Gradient Boost models - no surprise here!
+Neural network wins, followed by gradient boost models - no surprise here!
 
-Finally, you can use the leader to predict labels of the testing set:
+Finally, you can use the Leader to predict labels of the testing set:
 
 ``` r
 automl_leader <- models_h2o@leader
@@ -155,7 +155,7 @@ automl_leader <- models_h2o@leader
 h20_pred <- h2o.predict(automl_leader, test_h2o)
 ```
 
-It IS that easy, no joke. Let's have a quick look at the confusion matrix...
+It **IS** that easy, no joke. Let's have a quick look at the confusion matrix...
 
 ``` r
 library(tibble)
@@ -233,11 +233,11 @@ tibble(
     ## [[1]]$null_error_rate
     ## [1] 0.61
 
-Given that it is cancer data I'd be happier [recall](https://www.quora.com/What-does-recall-mean-in-machine-learning) was higher, but longer running times would improve this result. Now, can we understand the neural network that produced those predictions?
+Given that it is cancer data I'd be happier if [recall](https://www.quora.com/What-does-recall-mean-in-machine-learning) was higher, but longer running times would improve this. Now, can we understand the neural network - the king of 'black-box' learners - that produced those predictions?
 
 ### MAKING OBSCURE LESS OBSCURE USING `library(lime)`
 
-The answer is (to certain extend) **YES** and package `lime` will help us with it. Following Shirin's example, I'll split the data into correct and wrong prediction to better understand what confused the model about misclassified observations.
+The answer is (to certain extend) **YES** and package `lime` will help us with it. Following Shirin's example, I'll split the data into correct and wrong predictions to better understand what confused the model about misclassified observations.
 
 ``` r
 test_h2o_df = as.data.frame(test_h2o)
@@ -344,4 +344,4 @@ plot_features(explanation_wrong)
 
 ![predict_wrong](/img/2017-11-07-automated_machine_learning_in_cancer_detection_files/figure-markdown_github/wrong_lime-1.png)
 
-And here's where the true power of `lime` package is: understanding what made model missclasify labels. All the wrong cases were predcited to be benign while they were malignant, why? It looks like they were mainly small and quite regular cells, altough some malignant characterstics were still present (e.g. higher values of bare nuclei and clump thickness). What a great improvement of our understanding of how the 'black box' model works and why it makes mistakes. Even though it doesn't produce 'fixed' feature importance plots (i.e. a general, not case-to-case view of which variables are most informative when making a prediction), it allows you to make a damn good educated guess of which features matter. We live in wonderful times!
+And here's where the true power of `lime` package is: understanding what made model missclasify labels. All the wrong cases were predcited to be benign while they were malignant, why? It looks like they were mainly small and quite regular cells, altough some malignant characterstics were still present (e.g. higher values of bare nuclei and clump thickness). What a great improvement of our understanding of how the 'black box' model works and why it makes mistakes. Even though it doesn't produce 'fixed' feature importance plots (i.e. a general, not case-to-case view of which variables are most informative when making a prediction), it allows you to make a good educated guess of which features matter. We live in beautiful times!
