@@ -1,4 +1,4 @@
-It will go without saying that I'm super excited about the premiere of another Star Wars movie and I'm not an exception. This, together with with [Piotr Migdal's](https://twitter.com/pmigdal) challenge posted on Data Science PL group on Facebook where he suggested comparing word frequencies between two different sources. It didn't take me long to decide what source to choose! So in this short and sweer blogpost I'm comparing word frequencies between two movie scripts: "Star Wars: The New Hope" (1977) and "Star Trek: The Motion Picture" (1979). I chose these two because of 1) the obvious "competition" going on between the two camps and 2) similar time they were first broadcast. Let's get cracking!
+It will go without saying that I'm super excited about the premiere of another Star Wars movie and I'm not an exception. This, together with with [Piotr Migdal's](https://twitter.com/pmigdal) challenge posted on Data Science PL group on Facebook where he suggested comparing word frequencies between two different sources. It didn't take me long to decide what source to choose! So in this short kand sweer blogpost I'm comparing word frequencies between two movie scripts: "Star Wars: The New Hope" (1977) and "Star Trek: The Motion Picture" (1979). I chose these two because of 1) the obvious "competition" going on between the two camps and 2) similar time they were first broadcast. Let's get cracking!
 
 Let's load necessary packages:
 
@@ -157,7 +157,7 @@ final_tokens %>%
   ggtitle("Sample of words that occur with the same frequency in SW and ST")
 ```
 
-![similarities](/img/2017-12-16-star-wars-vs_star_trek_word_battle_files/figure-markdown_github/similarities_plot-1.png)
+![similarities](/img/2017-12-16-star-wars-vs-star-trek-word-battle_files/figure-markdown_github/similarities_plot-1.png)
 
 I must say, I expected this most similar vocabulary to be much more technical. At the same time, this time according to expectations, those words reflect action and drama in both movies: things `cease`, `emanate` and `shove`, people `shock`, experience `agony` and are `determined` and `knowledgeable`.
 
@@ -177,7 +177,7 @@ final_tokens %>%
   ggtitle("Words that show strikingly different frequencies in Star Wars and Star Trek")
 ```
 
-![differences](/img/2017-12-16-star-wars-vs_star_trek_word_battle_files/figure-markdown_github/differences_plot-1.png)
+![differences](/img/2017-12-16-star-wars-vs-star-trek-word-battle_files/figure-markdown_github/differences_plot-1.png)
 
 Haha! You may not be surprised that the most *Star Wars-y* vocabulary is full of words like `death`, `star`, `imperial` or even `father`, but I didn't expect `female` or `cloud` to be THAT much more present in Star Trek! Some things never `cease` to surprise even most `determined` and `knowledgeable` people, even if they have assistance of `imperial technician` ;-)
 
@@ -198,7 +198,7 @@ final_tokens %>%
   ggtitle("Word frequency by word proportion in Star Wars and Star Trek")
 ```
 
-![text_simple](/img/2017-12-16-star-wars-vs_star_trek_word_battle_files/figure-markdown_github/freq_plot_simple-1.png)
+![text_simple](/img/2017-12-16-star-wars-vs-star-trek-word-battle_files/figure-markdown_github/freq_plot_simple-1.png)
 
 Not a bad start! A much more appealing - although a bit less readable - look can be achieved with `geom_label()`:
 
@@ -215,4 +215,4 @@ final_tokens %>%
   ggtitle("Word frequency by word proportion in Star Wars and Star Trek")
 ```
 
-![text_color](/img/2017-12-16-star-wars-vs_star_trek_word_battle_files/figure-markdown_github/freq_plot_color-1.png)
+![text_colour](/img/2017-12-16-star-wars-vs-star-trek-word-battle_files/figure-markdown_github/freq_plot_color-1.png)
