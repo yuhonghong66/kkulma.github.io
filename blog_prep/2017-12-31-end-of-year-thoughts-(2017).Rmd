@@ -1,0 +1,57 @@
+---
+title: "2017-12-31-end-of-year-thoughts"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+## Sometimes it's worth making New Year resolutions... 
+
+A year ago I made a New Year resolution for 2017 to start an R blog using RMarkdown and Jekyll static sites. At the time, I didn't even know git that well, had no clue what static sites are and was mostly oblivious to the rich and vibrant R community on Twitter. Fast-forward one year and... the picture couldn't be any more different. I'd like to share my thoughts on writing the blog, the process of getting stuff done, as well as on this special group of people (aka #rstats community!) that are now a big part of everything that gets published here.
+
+
+## On pros (and pros only!) of writing a blog...
+
+I'm a list-person. Totally. I love ticking off boxes, feeling that I've achieved a lot every day. At the same time, working full time in London (meaning work + non-negligible commute) while having two small children (2 and 4 years old) significantly reduces the amount of time available to me to play around with code, read other blogs for learning + inspiration for new projects, etc. 
+
+project
+
+
+## On getting stuff done...
+
+My work as a data scientist and this blog give me lots of opportunities to solve problems and learn about solutions to deliver something tangible in defined time frames. 
+
+i) stay focused - know what you want to achieve and by when. Be ambitious, yet realistic (lists really help!).
+
+ii) learn to recognise when you're dwelling into the literature that is irrelevant to the project (just because it's interesting or may be useful in the future) and leave it for when the project is finished. 
+
+iii) if you want to explore an __"alternative solution"__ (for whatever reason: it may be more efficient, elegant, creative, etc.), give yourself a time limit by the end of which you'll drop it and look for more alternatives, if you still aren't any closer to cheiving your goal. It's surprising and emberassing how many times I got stuck at something thinking it's "the best way", just to discover later better and quicker solutions.
+
+iv) If you're trying to figure out how to do something (using trial & error + SO + Google) and you're not successful after 30 minutes, post your question on Twitter/Stack Overflow. Seriously, not only are you likely to get the correct answer within 30 minutes, but also you'll learn several different ways of approaching your problem. And you'll save yourself a significant amount of time and frustration, as well.
+
+v) I said that [before](get the link here), but... don't be a perfectionist. Your learning is never finished and there will be always something you could add or do better, if you only knew about X, Y, Z at the time. So let it go and get stuff out. People's feedback can only help and point you in the right direction once your project has been published. Also, being part of R community can guarantee you that this feedback will never be cruel or personal.
+
+vi) if things take longer than you'd like to, is there a way to break them up? Writing two shorter posts instead of one? Presenting a method/package rather than a finished analysis?
+
+vii) the last but definitely not the least: no number of ticked-off boxes on the to-do list will ever replace relationships. 
+
+# ticking off boxes can feel satisfying but won't replace relationships
+
+
+
+
+## Thoughts about the greatest #rstats community members:
+talk about others' work much more than about theirs
+
+
+## Special People in R Community
+
+- Maelle and for support, encouragement but also great content
+- Mara for shamelesly promoting great work of others while doing a great work on...?
+- Shirin - great content 
+- Jenny Bryan, Julia Silge, Charlotte Wickham
+- R ladies 
+- amazing and supportive connections that lead to unexpected outcomes, e.g. [Daniela](https://twitter.com/d4tagirl)
+
