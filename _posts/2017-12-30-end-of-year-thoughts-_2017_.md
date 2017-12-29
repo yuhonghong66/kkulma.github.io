@@ -1,6 +1,4 @@
-#### **SOMETIMES IT'S WORTH MAKING NEW YEAR RESOLUTIONS**
-
-A year ago I made a New Year resolution for 2017 to start an R blog using RMarkdown and Jekyll static sites. At the time, I didn't even know git that well, had no clue what static sites are and was mostly oblivious to the rich and vibrant R community on Twitter. Fast-forward one year and... the picture couldn't be any more different! I'd like to share my thoughts on writing this blog (and data science blog in general) and how it tought me about getting stuff done. But I can't write all this without mentioning a very special group of people - [\#rstats community](https://twitter.com/search?q=%23rstats&src=typd)! - that is now a big part of everything that gets published here.
+Sometimes it's worth making New Year resolutions... A year ago I made a New Year resolution for 2017 to start an R blog using RMarkdown and Jekyll static sites. At the time, I didn't even know git that well, had no clue what static sites are and was mostly oblivious to the rich and vibrant R community on Twitter. Fast-forward one year and... the picture couldn't be any more different! I'd like to share my thoughts on writing this blog (and data science blog in general) and how it tought me about getting stuff done. But I can't write all this without mentioning a very special group of people - [\#rstats community](https://twitter.com/search?q=%23rstats&src=typd)! - that is now a big part of everything that gets published here.
 
 #### **ON GETTING STUFF DONE**
 
