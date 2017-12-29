@@ -1,6 +1,8 @@
 ---
 title: "2017-12-31-end-of-year-thoughts"
-output: html_document
+output: 
+  md_document:
+    variant: markdown_github
 ---
 
 ```{r setup, include=FALSE}
