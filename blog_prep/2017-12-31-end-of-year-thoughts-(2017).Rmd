@@ -23,24 +23,33 @@ iii) if you want to explore an _"alternative solution"_ (for whatever reason: it
 
 iv) If you're trying to figure out how to do something (using trial & error + Stack Overflow + Google) and you're not successful after 30 minutes, post your question on Twitter/Stack Overflow. Seriously, not only are you likely to get the correct answer within 5-30 minutes, but also you'll learn several different ways to approach your problem. Also, you'll save yourself a significant amount of time and frustration..
 
-v) I said that [before](get the link here), but... don't be a perfectionist. Your learning is never finished and there will be always something you could add or do better if you only knew about X, Y, Z at the time. So let it go and get stuff out. People's feedback can only help and point you in the right direction once your project has been published. Also, being part of R community can guarantee you that this feedback will never be cruel or personal.
+v) I said that [before](https://kkulma.github.io/2017-08-13-friendships-among-top-r-twitterers/), but... don't be a perfectionist. Your learning is never finished and there will be always something you could add or do better if you only knew about X, Y, Z at the time. So let it go and get stuff out. People's feedback can only help and point you in the right direction once your project has been published. Also, being part of R community can guarantee you that this feedback will never be cruel or personal.
 
 vi) if things take longer than you'd like to, is there a way to break them up? Writing two shorter posts instead of one? Presenting a method/package rather than a finished analysis?
 
-vii) the last but definitely not the least: no number of ticked-off boxes on the to-do list will ever replace relationships. Now even if I have a plan to finish a project in the evening, but my partner comes home late and we hadn't have a chance to catch up yet, I drop the project and spend the evening chatting with him. For some people it's a no-brainer but I had to learn that data projects cannot compromise have been and will be supporting us for life. They are the ones that make it possible.
+vii) the last but definitely not the least: no number of ticked-off boxes on the to-do list will ever replace relationships. Now even if I have a plan to finish a project in the evening, but my partner comes home late and we hadn't have a chance to catch up yet, I drop the project and spend the evening chatting with him. For some people it's a no-brainer but I had to learn that data projects cannot compromise relationships that have been and will be supporting us for life. These relationships are what makes it all possible.
 
 
 #### **R COMMUNITY IS LIKE NO OTHER**
-talk about others' work much more than about theirs
+That's probably the most importantl lesson of 2017 - the R community is the most supportive and open community I've ever seen and been part of. Something absolutely critical that they made me realise is that **the best and most popular R community members are not such (only) because they have great skills and produce great work, consistently. They are such because they spend a considerable amount of time and energy on acknowledging other people's great work**.  
 
- *Special People in R Community*
+There are some people that particularly contributed to this view and I want to help them here for that:
 
-- [Maelle](https://twitter.com/ma_salmon) for support, encouragement but also great content
-- [Mara](https://twitter.com/dataandme) for shamelesly promoting great work of others while doing a great work on...?
-- [Shirin](https://twitter.com/ShirinGlander) - great content 
-- [Jenny Bryan](https://twitter.com/JennyBryan), [Julia Silge](https://twitter.com/juliasilge), [Charlotte Wickham](https://twitter.com/CVWickham)
-- R ladies, including [Hannah Frick](https://twitter.com/hfcfrick), Grace Mayer and [Claudia Vitolo](https://twitter.com/clavitolo)
-- amazing and supportive connections that lead to unexpected outcomes, e.g. [Daniela](https://twitter.com/d4tagirl)
+- [Maelle](https://twitter.com/ma_salmon) for support, encouragement but also great efficiency and content of [her blog](http://www.masalmon.eu/). Maelle always is one of the first people to comment on my blog posts and give me great advice on new methods/packages. We still haven't met offline, but I already feel like I know her a little bit :)
+
+- [Mara](https://twitter.com/dataandme) for shamelesly promoting great work of others [while working on 135482629 projects at any given time...](https://ropensci.org/blog/2017/11/10/rprofile-mara-averick/)
+
+- [Shirin](https://twitter.com/ShirinGlander) - Shirin is just this really impressive Data Scientist who knows so much and can convey this knowledge in any of her [various blog posts](https://shirinsplayground.netlify.com/). I learn a lot from her!
+
+- supportive connections can sometimes lead to unexpected outcomes, e.g. [Daniela](https://twitter.com/d4tagirl) was always a super enthusiastic #rstats Twitterer and commented on my tweets some times. And clearly that was enough to convince her husband to help me solve [really annoying issues with Jekyll and htmlwidgets](https://twitter.com/KKulma/status/899382021767737344). BTW, Daniela is a great [blogger](https://d4tagirl.com/) and a [NASA Datanuat](https://open.nasa.gov/explore/datanauts/)!
+
+- There are several female figures in R community who work at the forefront of R and Data Science and yet openly talk about *progress* everyone makes when learning any programming language (or skill, for that matter) and that no one is born a master. I'm grateful for those messages particularly to:  
+* [Jenny Bryan](https://twitter.com/JennyBryan) who is a master of [workflow and life logistics](https://ropensci.org/blog/2017/12/08/rprofile-jenny-bryan/).
+* [Julia Silge](https://twitter.com/juliasilge) who writes excellent [blog posts on Stack Overflow data findings](https://stackoverflow.blog/authors/juliasilge/) and dresses up in [DataCamp courses](https://www.datacamp.com/instructors/juliasilge).
+* [Charlotte Wickham](https://twitter.com/CVWickham) who gave a great presentation on [collaborative coding](http://cwick.co.nz/talks/collab-code-user17/#/) and how EVERYONE can contribute to R community
+
+- R ladies from London, particularly [Hannah Frick](https://twitter.com/hfcfrick), Grace Mayer and [Claudia Vitolo](https://twitter.com/clavitolo) who go far beyond what's expected from any volunteers and meetup organisers!
+
 
 #### **WHAT A YEAR**
 
