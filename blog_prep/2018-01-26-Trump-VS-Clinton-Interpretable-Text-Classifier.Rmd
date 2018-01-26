@@ -1,0 +1,139 @@
+---
+title: "Trump VS Clinton Interpretable Text Classifier"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+
+```{r pkgs}
+library(readr)
+library(lime)
+library(xgboost) # the classifier
+library(caret)
+library(dplyr)
+library(tibbe)
+library(text2vec) 
+library(qdapRegex) # removes urls from text
+```
+
+
+```{r data}
+tweets <- read_csv('tweets.csv')
+str(tweets)
+```
+
+```{r classes}
+table(tweets$handle)
+```
+
+
+```{r all_tweetts}
+all_tweets <- tweets %>% 
+  rename(author = handle) %>% 
+  select(author, text) %>% 
+  mutate(text = qdapRegex::rm_url(text)) %>% #removes URLs from text
+  na.omit()
+
+head(as.data.frame(all_tweets))
+```
+
+```{r model}
+set.seed(1234)
+trainIndex <- createDataPartition(all_tweets$author, p = .8, 
+                                  list = FALSE, 
+                                  times = 1)
+
+train_tweets <- all_tweets[ trainIndex,]
+test_tweets <- all_tweets[ -trainIndex,]
+
+str(train_tweets)
+```
+
+
+
+```{r tokens}
+# tokenizes text data nad creates Document Term Matrix
+get_matrix <- function(text) {
+  it <- itoken(text, progressbar = TRUE)
+  create_dtm(it, vectorizer = hash_vectorizer(ngram = 1L))
+}
+
+dtm_train= get_matrix(train_tweets$text)
+dtm_test = get_matrix(test_tweets$text)
+
+# Extreme gradient boosting algorithm with standard parameters
+
+param <- list(max_depth = 7, 
+              eta = 0.1, 
+              objective = "binary:logistic", 
+              eval_metric = "error", 
+              nthread = 1)
+
+set.seed(1234)
+xgb_model <- xgb.train(
+  param, 
+  xgb.DMatrix(dtm_train2, label = train_tweets$author == "realDonaldTrump"),
+  nrounds = 50
+)
+```
+
+
+```{r predict}
+# We use a (standard) threshold of 0.5
+predictions <- predict(xgb_model, dtm_test) > 0.5
+test_labels <- test_tweets$author == "realDonaldTrump"
+
+# Accuracy
+print(mean(predictions == test_labels))
+```
+
+
+```{r correct}
+# select only correct predictions
+predictions_tb = predictions %>% as_tibble() %>% 
+  rename_(predict_label = names(.)[1]) %>%
+  tibble::rownames_to_column()
+
+correct_pred = test_tweets %>%
+  tibble::rownames_to_column() %>% 
+  mutate(test_label = author == "realDonaldTrump") %>%
+  left_join(predictions_tb) %>%
+  filter(test_label == predict_label) %>% 
+  pull(text) %>% 
+  head(5)
+```
+
+
+
+
+```{r explainer}
+detach("package:dplyr", unload=TRUE) # explainer will not run with dplyr in the workspace
+
+
+explainer <- lime(sentence_to_explain, model = xgb_model2, 
+                  preprocess = get_matrix)
+
+corr_explanation <- lime::explain(correct_pred, explainer, n_labels = 1, 
+                       n_features = 5)
+```
+
+
+```{r features}
+plot_features(corr_explanation)
+```
+
+```{r text_explanations}
+plot_text_explanations(corr_explanation)
+```
+
+
+```{r interactive_text}
+# Launching the application is done in one command
+interactive_text_explanations(explainer)
+```
+
+
+
