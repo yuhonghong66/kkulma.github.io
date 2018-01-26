@@ -7,22 +7,23 @@ output: html_document
 knitr::opts_chunk$set(echo = TRUE)
 ```
 
+I've been writing/talking a lot about  [LIME](https://www.oreilly.com/learning/introduction-to-local-interpretable-model-agnostic-explanations-lime)] recently: in [this blog](https://kkulma.github.io/2017-11-07-automated_machine_learning_in_cancer_detection/)/ at [H20 meetup](https://www.youtube.com/watch?v=CY3t11vuuOM), or at coming [AI Congress](https://theaicongress.com/) and I'm still in love with this tool for interpreting any, even black-box - algorithms! The part I love most is that LIME can be applied to both   
 
-```{r pkgs}
+```{r pkgs, message=FALSE}
 library(readr)
 library(lime)
 library(xgboost) # the classifier
 library(caret)
 library(dplyr)
-library(tibbe)
+library(tibble)
 library(text2vec) 
 library(qdapRegex) # removes urls from text
 ```
 
 
-```{r data}
-tweets <- read_csv('tweets.csv')
-str(tweets)
+```{r data, message=FALSE}
+tweets <- read_csv('data/tweets.csv')
+head(tweets)
 ```
 
 ```{r classes}
@@ -54,11 +55,11 @@ str(train_tweets)
 
 
 
-```{r tokens}
+```{r tokens, results='hide'}
 # tokenizes text data nad creates Document Term Matrix
 get_matrix <- function(text) {
   it <- itoken(text, progressbar = TRUE)
-  create_dtm(it, vectorizer = hash_vectorizer(ngram = 1L))
+  create_dtm(it, vectorizer = hash_vectorizer(ngram = c(1L, 2L)))
 }
 
 dtm_train= get_matrix(train_tweets$text)
@@ -75,8 +76,9 @@ param <- list(max_depth = 7,
 set.seed(1234)
 xgb_model <- xgb.train(
   param, 
-  xgb.DMatrix(dtm_train2, label = train_tweets$author == "realDonaldTrump"),
-  nrounds = 50
+  xgb.DMatrix(dtm_train, label = train_tweets$author == "realDonaldTrump"),
+  nrounds = 50,
+  verbose=0
 )
 ```
 
@@ -91,7 +93,7 @@ print(mean(predictions == test_labels))
 ```
 
 
-```{r correct}
+```{r correct, message=FALSE}
 # select only correct predictions
 predictions_tb = predictions %>% as_tibble() %>% 
   rename_(predict_label = names(.)[1]) %>%
@@ -108,16 +110,19 @@ correct_pred = test_tweets %>%
 
 
 
+```{r detach_dplyr, message=FALSE, error=FALSE}
+detach("package:dplyr", unload=TRUE) # explainer will not run with dplyr in the workspace
+```
+
 
 ```{r explainer}
-detach("package:dplyr", unload=TRUE) # explainer will not run with dplyr in the workspace
-
-
-explainer <- lime(sentence_to_explain, model = xgb_model2, 
+explainer <- lime(correct_pred, model = xgb_model, 
                   preprocess = get_matrix)
+```
 
+```{r corr_explain, results='hide'}
 corr_explanation <- lime::explain(correct_pred, explainer, n_labels = 1, 
-                       n_features = 5)
+                       n_features = 6, cols = 2, verbose = 0)
 ```
 
 
@@ -130,7 +135,7 @@ plot_text_explanations(corr_explanation)
 ```
 
 
-```{r interactive_text}
+```{r interactive_text, results='hide', message=FALSE, error=FALSE}
 # Launching the application is done in one command
 interactive_text_explanations(explainer)
 ```
