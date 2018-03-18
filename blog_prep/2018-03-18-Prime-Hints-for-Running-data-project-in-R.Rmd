@@ -1,6 +1,8 @@
 ---
-title: "r_best_practice"
-output: html_document
+title: "prime_hints_for_running_a_data_project_in_R"
+output: 
+  md_document:
+    variant: markdown_github
 ---
 
 ```{r setup, include=FALSE}
