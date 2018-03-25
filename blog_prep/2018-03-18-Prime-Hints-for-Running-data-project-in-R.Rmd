@@ -68,6 +68,12 @@ all_tweets <- tweets %>%
 
 Here, I'm expecting to use `readr` and `dplyr` packages regularly and I'm using `qdapRegex` library only once - to remove URL's from my tweet data. In this case I call `rm_url()` once and I specify the package that it comes from. More about in [here](https://stackoverflow.com/a/23232888). Easy peasy.
 
+#### **!!! UPDATE !!!** 
+
+As [Brent Auble](https://twitter.com/brentauble/status/975667201595277313) correctly pointed out, if you decide to use `::` way of calling the package, make sure to put the comment clarifying that you're going to use this package - preferrably in the load section of the script  - so that the user installs the package before running the script. 
+
+Also, [Maëlle Salmon](https://twitter.com/ma_salmon) made me realise that there's already an excellent package [packup](https://github.com/MilesMcBain/packup) that organises your code so that any mentioned libraries anywhere in the script automatically end up in the beginning of your code. Genius!
+
 ### **04. Name your code sections and use them for quick navigation. **
 
 Your code will grow. Sometimes it will turn into an R script equivalent of the Bible, at least in terms of volume. To keep it organized, keep your code nice and tidy by assigning relevant code chunks to different sections that can be later folded/unfolded; you can also easily navigate yourself through chunks by using 'drop-up' menu at the bottom of the script screen. 
@@ -77,10 +83,14 @@ You create a new code section by writing `####` or `----` at the end of any comm
 See the image below for a simplified example:
 
 
+
 ```{r, out.width = "550px", echo=FALSE}
 knitr::include_graphics("pics/code_sections.png")
 ```
 
+#### **!!! UPDATE !!!** 
+
+There's even a [keyboard shortcut](https://support.rstudio.com/hc/en-us/articles/200711853-Keyboard-Shortcuts) in RStudio for inserting code sections: `Ctrl+Shift+R` for Windows users and `Command+Shift+R` for Mac users. Even [Hadley Wickham can tell you that!](https://twitter.com/hadleywickham/status/975711350130327552)
 
 ### **05. Make your life easier and mark your code when you need to. **
 
@@ -90,6 +100,10 @@ Did you know that if you click anywhere left from line numbers in RStudio, it wi
 knitr::include_graphics("pics/red_dot.png")
 ```
 
+
+#### **!!! UPDATE !!!** 
+
+I didn't know at the time of writing, but as [Jonathan Carroll](https://twitter.com/carroll_jono/status/975498243944587264) and many after him pointed out: the red dot actually indicates a debug point. If you leave it in the script while running the code, it will start a debugging process and therefore stop executing your code. Therefore **always remember to remove the red dot when you run/source your code!!**. Still, I find it pretty useful for temporary marking purposes ;) 
 
 ### **06. Write your code as if someone was going to use it without communicating with you. From. Day. One.**
 
@@ -113,6 +127,10 @@ What makes good, reproducible code?
 - logical and efficient code
 - code that is ideally timed and tested 
 
+
+#### **!!! UPDATE !!!** 
+
+I had discussions online and offline whether your code alone can be used as sufficient documentation. The argument is that clean and clear code should stand for itself, no comments are necessary. There was a time when I thought that, too, but as [Mark Sellors](https://twitter.com/sellorm/status/975845659420119041) pointed out: any code will explain what you did, but it will rarely say WHY you did it. So comment your code generously, please!
 
 ### **07. Name your files like a Pro.**
 
@@ -198,6 +216,18 @@ So what you do instead is write one script for data import and save the data.fra
 This way you create a clear structure of building blocks, as well inputs and outputs. Additionally, once the data has been imported and cleaned, you can jump straight away into next steps of analysis/modelling without wasting any time on the first two steps. 
 
 I started using this approach in big and complex projects after reading [this SO answer](https://stackoverflow.com/a/1434424) and I never looked back.
+
+
+#### **!!! UPDATE !!!** 
+
+Lots of comments regarding this one.
+
+First, I didn't mention it explicitly, but it mentioned in the Stack Overflow reply I refer to: if you define a number of functions, it's a good practice to define them in a separate script that you can later source. [Blazko](http://disq.us/p/1r2d3ga) is clearly a fan of this solution :)
+
+Secondly, saving your data objects as `.rds` file is probably a better solution than using `.RData`, as you can directly assing it to another object in a new session (right,  [Kees Mulder](https://twitter.com/keestimmulder/status/975854141401595904) ?) or assign a bunch of similar object into a list (wink wink, [Martin Johnsson](https://twitter.com/mrtnj/status/975856756927750145) ). It's also an official recommendation of [Jenny Bryan](https://twitter.com/JennyBryan/status/975856014019903489).
+
+Finally, if you need a reproducible way of running a number of connected script and/or visualising how they are connected, search no more: [drake package](https://github.com/ropensci/drake) is here to help! Really impressive tool, had no idea it existed at the time of writing this post, so thanks [Peter Higgins](https://twitter.com/ibddoctor/status/975731013266673665) for telling me about it.  
+
 
 ### **10. Never save your workspace.**
 
