@@ -57,7 +57,7 @@ As [Brent Auble](https://twitter.com/brentauble/status/975667201595277313) corre
 
 Also, [Maëlle Salmon](https://twitter.com/ma_salmon) made me realise that there's already an excellent package [packup](https://github.com/MilesMcBain/packup) that organises your code so that any mentioned libraries anywhere in the script automatically end up in the beginning of your code. Genius!
 
-### **04. Name your code sections and use them for quick navigation. **
+### **04. Name your code sections and use them for quick navigation.**
 
 Your code will grow. Sometimes it will turn into an R script equivalent of the Bible, at least in terms of volume. To keep it organized, keep your code nice and tidy by assigning relevant code chunks to different sections that can be later folded/unfolded; you can also easily navigate yourself through chunks by using 'drop-up' menu at the bottom of the script screen.
 
@@ -72,7 +72,7 @@ See the image below for a simplified example:
 
 There's even a [keyboard shortcut](https://support.rstudio.com/hc/en-us/articles/200711853-Keyboard-Shortcuts) in RStudio for inserting code sections: `Ctrl+Shift+R` for Windows users and `Command+Shift+R` for Mac users. Even [Hadley Wickham can tell you that!](https://twitter.com/hadleywickham/status/975711350130327552)
 
-### **05. Make your life easier and mark your code when you need to. **
+### **05. Make your life easier and mark your code when you need to.**
 
 Did you know that if you click anywhere left from line numbers in RStudio, it will create a red mark? I think this is one of the most underused features in RStudio, and a very useful one, too! Imagine having to define a function using another part of a very long R script? Instead of finding a relevant part of the script and then spending seconds or minutes on finding the function that you were about to define, you first mark that function, go to the relevant bit of code and then have no problems finding the function to be defined again, as the red mark will tell you where to look. BTW, it works only in already saved R scripts and it doesn't work in RMarkdown files.
 
@@ -159,7 +159,7 @@ Again, one of Jenny's examples:
 
 I couldn't believe how much these little hacks improved the flow of my work. Paying attention to file names was also appreciated by my coworkers, I'm sure.
 
-### **08. If you have to copy/paste excerpt of code 3 or more times, write a function for it. **
+### **08. If you have to copy/paste excerpt of code 3 or more times, write a function for it.**
 
 .. as Hadley Wickham said many many times in his and Charlotte's [course on DataCamp](https://www.datacamp.com/courses/writing-functions-in-r/). It doesn't only teach you to write more elegant and efficient code, but also it makes it more readable for yourself and others.
 
