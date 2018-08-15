@@ -273,8 +273,9 @@ july_data %>%
   addHeatmap(lng=~as.numeric(location.longitude), lat=~as.numeric(location.latitude), radius = 8)
 ```
 
+Much better! Now we at least now what we look at. But still, it's difficult to understand, for example, how areas with the highest crime rate relate to each other. There's a solution for it! First, let's pick 3 areas with the most crimes: 
 
-```{r top_3}
+```{r top_3, warning=FALSE, message=FALSE}
 # pick top 3 most 'criminal' areas
 
 top_3 <- police_grid %>% 
@@ -285,11 +286,16 @@ top_3 <- police_grid %>%
 top_3
 ```
 
+Good. Now, let's try something new: create two types of icons and associate the top three areas with one of them. Again, `leaflet` package makes it very easy to make icons from any open source PNG files:
+
 ```{r geo-icons}
 ### marker icons ####
+
+# URL to PNG files
 tube_icon <- 'https://www.shareicon.net/data/128x128/2016/02/02/712554_shapes_512x512.png'
 police_icon <- 'https://png.icons8.com/metro/1600/policeman-male.png'
 
+# create one icon for top 3 areas and one for the rest
 policeIcons <- icons(
   iconUrl = ifelse(july_data$location %in% top_3$location,
                    police_icon,
@@ -297,7 +303,7 @@ policeIcons <- icons(
   iconWidth = 30, iconHeight = 30
 )
 
-
+# plot the heatmap with the icons
 july_data %>% 
   leaflet() %>%
   addProviderTiles(providers$CartoDB.Positron) %>%
@@ -310,5 +316,8 @@ july_data %>%
              radius = 8)
 ```
 
+Ta-da! So now we can see that the 3 areas with most crime are situated close to each other, in Central London. 
+
+In summary, R and heatmaps give lots of tools to visualise and understand even complex and multidimensional data.
 
 
