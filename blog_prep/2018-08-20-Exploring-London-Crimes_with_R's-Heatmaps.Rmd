@@ -1,5 +1,5 @@
 ---
-title: "uk-police-heatmaps"
+title: "Exploring-London-Crime-with-R-and-heatmaps"
 output: html_document
 ---
 
@@ -10,7 +10,7 @@ knitr::opts_chunk$set(echo = TRUE)
 Recently, I had a real pleasure to work with various types of data pulled from public APIs, one of them being [data.police.uk API](https://data.police.uk/). Oh, those hours of pure intellectual exploration it's given me! I have a soft spot for crime data and [I explored it using heat maps in the past](https://kkulma.github.io/2017-05-30-animated-plots-as-part-of-exploratory-data-analysis/).
 Apart from checking and visualising stats for the new area in London we just moved to, it made me think more about good and better ways of presenting complex and multidimensional information. I'm dedicating this post to my favourite heat maps, so expect some lovely colours (side by side with insightful findings on London crime)! 
 
-## *PROJECT DESCRIPTION*
+## **PROJECT DESCRIPTION**
 
 I'm going to scrape Wikipedia to get coordinates of all Tube Stations in London. Then I'll pick a random sample of 20 of them and use their latitude and longitude to pull all crime information for those locations between Jan 2016 and June 2018. Then, I'll explore crime frequency and crime type per location over time using faceted heatmaps. Finally, I play a bit with `leaflet` package to explore best way of visualising this data on geographical heat maps.
 
@@ -150,9 +150,9 @@ july_data <- final_df %>%
 ```
 
 
-## *HEAT MAPP-ING*
+## **HEAT MAPP-ING**
 
-*FACETED HEAT MAPS*
+**FACETED HEAT MAPS**
 
 Here come the heat maps! Let's start summarising the frequency of all crimes for each location and month:
 
