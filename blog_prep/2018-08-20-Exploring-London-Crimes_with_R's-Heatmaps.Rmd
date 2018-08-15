@@ -7,13 +7,14 @@ output: html_document
 knitr::opts_chunk$set(echo = TRUE)
 ```
 
-Recently, I had a real pleasure to work with various types of data pulled from public APIs, one of them being [data.police.uk API](https://data.police.uk/). Oh, those hours of pure intellectual exploration it's given me! Apart from checking and visualising stats for the new area in London we just moved to, it made me think more about good and better ways of presenting complex and multidimensional information. I'm dedicating this post to my favourite heat maps, so expect some lovely colours (side by side with insightful findings on London crime)! 
+Recently, I had a real pleasure to work with various types of data pulled from public APIs, one of them being [data.police.uk API](https://data.police.uk/). Oh, those hours of pure intellectual exploration it's given me! I have a soft spot for crime data and [I explored it using heat maps in the past](https://kkulma.github.io/2017-05-30-animated-plots-as-part-of-exploratory-data-analysis/).
+Apart from checking and visualising stats for the new area in London we just moved to, it made me think more about good and better ways of presenting complex and multidimensional information. I'm dedicating this post to my favourite heat maps, so expect some lovely colours (side by side with insightful findings on London crime)! 
 
-## PROJECT DESCRIPTION
+## *PROJECT DESCRIPTION*
 
-I'm going to scrape Wikipedia to get coordinates of all Tube Stations in London. Then I'll pick a random sample of 20 of them and use their latitude and longitude to pull all crime information for those locations between Jan 2016 and June 2018. Then, I'll explore crime frequency and crime type per location over time using tiled heatmaps (that's my own name, let me know if you know what the 'official' one is). Finally, I play a bit with `leaflet` package to explore best way of visualising this data on geographical heat maps.
+I'm going to scrape Wikipedia to get coordinates of all Tube Stations in London. Then I'll pick a random sample of 20 of them and use their latitude and longitude to pull all crime information for those locations between Jan 2016 and June 2018. Then, I'll explore crime frequency and crime type per location over time using faceted heatmaps. Finally, I play a bit with `leaflet` package to explore best way of visualising this data on geographical heat maps.
 
-## PACKAGES
+## **PACKAGES**
 
 Here's a sweet collection of packages required to run this analysis:
 
@@ -33,7 +34,7 @@ library(htmltools)
 ```
 
 
-## SCRAPING WIKI
+## **SCRAPING WIKI**
 
 Let's first start with scraping a table from Wikipedia website that holds coordinates for all London Tube stations. I used Google Selector tool for it, you can learn more about it [here](https://blog.rstudio.com/2014/11/24/rvest-easy-web-scraping-with-r/):
 
@@ -71,7 +72,7 @@ wiki_sample <- wiki_selected[k, ]
 wiki_sample
 ```
 
-## PULLING DATA FROM DATA.POLICE.UK API
+## **PULLING DATA FROM __DATA.POLICE.UK__ API**
 
 Now that we have coordinates, we can feed them into the UK Police API that requires the following parameters: latitude, longitude and year-month which we want to pull crime data for. To make everyone's life easier, I define a function `get_crime()` which will require all three parameters but also a name of the station that coordinates correspond to:
 
@@ -149,14 +150,20 @@ july_data <- final_df %>%
 ```
 
 
-## HEAT MAPP-ING
+## *HEAT MAPP-ING*
+
+*FACETED HEAT MAPS*
+
+Here come the heat maps! Let's start summarising the frequency of all crimes for each location and month:
+
 ```{r tiled-heatmap1}
-### tiled heat map of all crimes ####
+# summarise available data and save it in a data.frame
 police_grid <- final_df %>%
   unique() %>% 
   group_by(location, date) %>% 
   summarise(n_crimes = n())
 
+### faceted heat map of all the crimes per location and month!
 ggplot(police_grid,aes(x=date,y=location, fill=n_crimes))+
   #add border white colour of line thickness 0.25
   geom_tile(colour="white",size=0.25)+
@@ -187,14 +194,15 @@ ggplot(police_grid,aes(x=date,y=location, fill=n_crimes))+
   guides(fill=guide_legend(title="Number of crimes"))
 ```
 
+So pretty! I'm a big-big fan of `viridis` colour pallette and I must say you see it at its best in heat maps. And how informative this heat map is! From the first glimpse you can see straight away which areas tend to have more crime (e.g. Bethnal Green, Bayswater) and when (summer months). We know what and when, what about the type of crime they experiene most? This can be sorted with another faceted heatmap:
 
 ```{r tiled-heatmap2}
-### tiled heat map of types of crimes per area ####
-
+# summarise data by location and crime type
 crime_grid <- final_df %>% 
   group_by(location, category) %>% 
-  summarise(n_crimes = n())
+  summarise(n_crimes = n()) 
 
+# plot above data in faceted heat map
 ggplot(crime_grid,aes(x=category,y=location, fill=n_crimes))+
   geom_tile(colour="white",size=0.25)+
   labs(x="",y="")+
@@ -212,9 +220,15 @@ ggplot(crime_grid,aes(x=category,y=location, fill=n_crimes))+
   guides(fill=guide_legend(title="Number of crimes"))
 ```
 
+Another informative beauty! You can see that 3 types of crime dominate: anit-social behaviour, violent crime and vehicle theft. Again, avoid Bethnal Green if you can and make sure you hang out in Epping, instead! 
+
+
+*GEOGRAPHIC HEAT MAPS*
+
+Facets are brilliant when it comes to quantitative comparison, but where are these areas? are they close/far away from each other? These questions can be only answered by geo heat maps. Lets plot a very basic one using `leaflet` package:
 
 ```{r basic-geo}
-#### 1 MONTH DATA: BASIC HEATMAP ####
+
 july_data %>% 
   leaflet() %>%
   addProviderTiles(providers$CartoDB.Positron) %>%
@@ -223,10 +237,11 @@ july_data %>%
              radius = 8)
 ```
 
+Great, it looks like the farther away you are from the city centre, the fewer crimes you see (doh!). Now, we can add information about number of plotted crime-points using `clusterOptions` functionality, have a look:
 
 ```{r basic-geo-clusters}
-#### 1 MONTH DATA: BASIC HEATMAP + CLUSTERS ####
 
+# adding color schemes to crime types
 color_scheme <- viridis::cividis(n_distinct(july_data$category))
 pal = colorFactor(color_scheme, july_data$category)
 
@@ -245,8 +260,9 @@ july_data %>%
              radius = 8)
 ```
 
+That makes comparison a bit more solid and quantifiable. Great! But still we don't know But which area on the map corresponds to which tube station. We can fix it by adding markers to the centre of each area:
+
 ```{r basic-geo-labels}
-#### 1 MONTH DATA: BASIC HEATMAP + LABELS ####
 
 july_data %>% 
   leaflet() %>%
