@@ -7,7 +7,17 @@ output: html_document
 knitr::opts_chunk$set(echo = TRUE)
 ```
 
-```{r libraries}
+Recently, I had a real pleasure to work with various types of data pulled from public APIs, one of them being [data.police.uk API](https://data.police.uk/). Oh, those hours of pure intellectual exploration it's given me! Apart from checking and visualising stats for the new area in London we just moved to, it made me think more about good and better ways of presenting complex and multidimensional information. I'm dedicating this post to my favourite heat maps, so expect some lovely colours (side by side with insightful findings on London crime)! 
+
+## PROJECT DESCRIPTION
+
+I'm going to scrape Wikipedia to get coordinates of all Tube Stations in London. Then I'll pick a random sample of 20 of them and use their latitude and longitude to pull all crime information for those locations between Jan 2016 and June 2018. Then, I'll explore crime frequency and crime type per location over time using tiled heatmaps (that's my own name, let me know if you know what the 'official' one is). Finally, I play a bit with `leaflet` package to explore best way of visualising this data on geographical heat maps.
+
+## PACKAGES
+
+Here's a sweet collection of packages required to run this analysis:
+
+```{r libraries, warning=FALSE, message=FALSE, error=FALSE}
 library(httr)
 library(rvest)
 library(purrr)
@@ -21,6 +31,8 @@ library(leaflet)
 library(leaflet.extras)
 library(htmltools)
 ```
+
+Let's first start with 
 
 ```{r wiki_table}
 ### scraping with rvest() ####
@@ -84,7 +96,7 @@ for(i in 1:length(iter_months)){
 ```
 
 ```{r load-rds, echo=FALSE}
-final_df <- readRDS("20180719-final-police-df-Jan16-June18.rds")
+final_df <- readRDS("data/20180719-final-police-df-Jan16-June18.rds")
 glimpse(final_df)
 ```
 
