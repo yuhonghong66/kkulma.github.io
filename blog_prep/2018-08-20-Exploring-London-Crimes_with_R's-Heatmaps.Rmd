@@ -1,0 +1,253 @@
+---
+title: "uk-police-heatmaps"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+```{r libraries}
+library(httr)
+library(rvest)
+library(purrr)
+library(dplyr)
+library(ggplot2)
+library(jsonlite)
+library(lubridate)
+library(stringr)
+library(viridis)
+library(leaflet)
+library(leaflet.extras)
+library(htmltools)
+```
+
+```{r wiki_table}
+### scraping with rvest() ####
+
+wiki_link <- "https://wiki.openstreetmap.org/wiki/List_of_London_Underground_stations"
+
+wiki_tbl <- wiki_link %>%
+  read_html() %>%
+  html_nodes(xpath='//*[@id="mw-content-text"]/div/table[1]') %>% 
+  html_table(fill = TRUE) %>% 
+  as.data.frame()
+```
+
+```{r get-crime}
+
+get_crime <- function(lat, long, date, name) {
+  
+  base <- "https://data.police.uk/api/crimes-street/all-crime"
+  police_url <- paste0(base, "?", "lat=", lat, "&lng=", long, "&date=", date)  
+  get_police <- GET(police_url)
+  
+  police_data_json <- content(get_police, "text")
+  police_data <- fromJSON(police_data_json, flatten = TRUE) %>% 
+    mutate(location = name)
+  return(police_data)
+  
+}
+```
+
+
+```{r london-sample}
+wiki_selected <- 
+  wiki_tbl %>% 
+  select(name = Name,
+         lat = Latitude,
+         long = Longitude)
+
+set.seed(999)
+k <- sample(as.numeric(rownames(wiki_selected)), 20)
+wiki_sample <- wiki_selected[k, ]
+wiki_sample
+```
+
+
+```{r get-met-data, eval=FALSE}
+# mutli-loation multi-month test ####
+iter_months <- str_sub(seq(ymd('2016-01-01'),ymd('2018-06-20'), by = 'month'),
+                       start = 1, end = 7)
+
+final_df<-data.frame()
+for(i in 1:length(iter_months)){
+  pre_final_list <- pmap(list(lat = wiki_sample$lat,
+                              long = wiki_sample$long,
+                              name = wiki_sample$name,
+                              date = iter_months[i]),
+                         get_crime)
+  pre_final_df <- bind_rows(pre_final_list)
+  final_df <- bind_rows(final_df, pre_final_df)
+  
+}
+```
+
+```{r load-rds, echo=FALSE}
+final_df <- readRDS("20180719-final-police-df-Jan16-June18.rds")
+glimpse(final_df)
+```
+
+```{r location-breakdown}
+table(final_df$location, final_df$month)
+```
+
+```{r add-names}
+final_df <- final_df %>% 
+  left_join(wiki_sample, by = c("location" = "name")) %>% 
+   rename(date = month,
+          search_lat = lat,
+          search_long = long)
+```
+
+```{r july-data}
+july_data <- final_df %>%
+  filter(date == "2017-07")
+```
+
+```{r tiled-heatmap1}
+### tiled heat map of all crimes ####
+police_grid <- final_df %>%
+  unique() %>% 
+  group_by(location, date) %>% 
+  summarise(n_crimes = n())
+
+ggplot(police_grid,aes(x=date,y=location, fill=n_crimes))+
+  #add border white colour of line thickness 0.25
+  geom_tile(colour="white",size=0.25)+
+  labs(x="",y="")+
+  #remove extra space
+  scale_y_discrete(expand=c(0,0))+
+  #define new breaks on x-axis
+  scale_x_discrete(expand=c(0,0), 
+                   breaks=c("2016-01","2017-01","2018-01"))+
+  scale_fill_viridis(option = "B") +
+  ggtitle("Number of crimes at London Tube stations") +
+  coord_fixed()+
+  #set a base size for all fonts
+  theme_grey(base_size=8)+
+  #theme options
+  theme(
+    # vertical labels on x axis
+    axis.text.x = element_text(),
+    #bold font for both axis text
+    axis.text=element_text(face="bold"),
+    #set thickness of axis ticks
+    axis.ticks=element_line(size=0.4),
+    #remove plot background
+    plot.background=element_blank(),
+    #remove plot border
+    panel.border=element_blank()
+  ) +
+  guides(fill=guide_legend(title="Number of crimes"))
+```
+
+
+```{r tiled-heatmap2}
+### tiled heat map of types of crimes per area ####
+
+crime_grid <- final_df %>% 
+  group_by(location, category) %>% 
+  summarise(n_crimes = n())
+
+ggplot(crime_grid,aes(x=category,y=location, fill=n_crimes))+
+  geom_tile(colour="white",size=0.25)+
+  labs(x="",y="")+
+  scale_y_discrete(expand=c(0,0))+
+  scale_fill_viridis(option = "B") +
+  coord_fixed()+
+  theme_grey(base_size=8)+
+  theme(
+    axis.text.x = element_text(angle = 45, hjust = 1),
+    axis.text=element_text(face="bold"),
+    axis.ticks=element_line(size=0.4),
+    plot.background=element_blank(),
+    panel.border=element_blank()
+  ) +
+  guides(fill=guide_legend(title="Number of crimes"))
+```
+
+
+```{r basic-geo}
+#### 1 MONTH DATA: BASIC HEATMAP ####
+july_data %>% 
+  leaflet() %>%
+  addProviderTiles(providers$CartoDB.Positron) %>%
+  addHeatmap(lng=~as.numeric(location.longitude),
+             lat=~as.numeric(location.latitude),
+             radius = 8)
+```
+
+
+```{r basic-geo-clusters}
+#### 1 MONTH DATA: BASIC HEATMAP + CLUSTERS ####
+
+color_scheme <- viridis::cividis(n_distinct(july_data$category))
+pal = colorFactor(color_scheme, july_data$category)
+
+july_data %>% 
+  leaflet() %>%
+  addProviderTiles(providers$CartoDB.Positron) %>%
+  addCircleMarkers(~as.numeric(location.longitude),
+                   ~as.numeric(location.latitude),
+                   fillColor = ~pal(category),
+                   stroke = FALSE, fillOpacity = 0.8,
+                   clusterOptions = markerClusterOptions(), # adds summary circles
+                   popup = ~as.character(category)
+  ) %>% 
+  addHeatmap(lng=~as.numeric(location.longitude),
+             lat=~as.numeric(location.latitude),
+             radius = 8)
+```
+
+```{r basic-geo-labels}
+#### 1 MONTH DATA: BASIC HEATMAP + LABELS ####
+
+july_data %>% 
+  leaflet() %>%
+  addProviderTiles(providers$CartoDB.Positron) %>%
+  addMarkers(lng = ~as.numeric(search_long),
+             lat = ~as.numeric(search_lat),
+             label = ~location) %>% 
+  addHeatmap(lng=~as.numeric(location.longitude), lat=~as.numeric(location.latitude), radius = 8)
+```
+
+
+```{r top_3}
+# pick top 3 most 'criminal' areas
+
+top_3 <- police_grid %>% 
+  filter(date == '2017-07') %>% 
+  ungroup() %>% 
+  top_n(3)
+
+top_3
+```
+
+```{r geo-icons}
+### marker icons ####
+tube_icon <- 'https://www.shareicon.net/data/128x128/2016/02/02/712554_shapes_512x512.png'
+police_icon <- 'https://png.icons8.com/metro/1600/policeman-male.png'
+
+policeIcons <- icons(
+  iconUrl = ifelse(july_data$location %in% top_3$location,
+                   police_icon,
+                   tube_icon),
+  iconWidth = 30, iconHeight = 30
+)
+
+
+july_data %>% 
+  leaflet() %>%
+  addProviderTiles(providers$CartoDB.Positron) %>%
+  addMarkers(lng = ~as.numeric(search_long),
+             lat = ~as.numeric(search_lat),
+             label = ~location,
+             icon = policeIcons) %>% 
+  addHeatmap(lng=~as.numeric(location.longitude),
+             lat=~as.numeric(location.latitude),
+             radius = 8)
+```
+
+
+
